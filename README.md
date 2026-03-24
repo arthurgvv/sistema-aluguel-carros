@@ -1,1 +1,1 @@
-# lab02-sistema-aluguel-carros
+# sistema-aluguel-carros
