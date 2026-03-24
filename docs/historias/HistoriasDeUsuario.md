@@ -18,7 +18,7 @@
 
 ---
 
-## 🏢 Agente (Empresa/Banco)
+## 🏢 Agente
 
 - Como agente, quero fazer login no sistema para acessar os pedidos de aluguel.
 
