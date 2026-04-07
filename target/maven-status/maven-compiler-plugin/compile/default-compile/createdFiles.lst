@@ -1,0 +1,9 @@
+br\com\aluguelcarros\dao\UsuarioDAO.class
+br\com\aluguelcarros\controller\UsuarioController.class
+br\com\aluguelcarros\model\LoginRequest.class
+br\com\aluguelcarros\model\Usuario.class
+br\com\aluguelcarros\dao\DatabaseInitializer.class
+br\com\aluguelcarros\service\UsuarioService.class
+br\com\aluguelcarros\controller\AbstractApiController.class
+br\com\aluguelcarros\dao\DatabaseConnection.class
+br\com\aluguelcarros\dao\JdbcUsuarioDAO.class
