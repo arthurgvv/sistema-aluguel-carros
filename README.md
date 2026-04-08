@@ -46,7 +46,7 @@ O projeto usa H2 persistido em arquivo local:
 ### Backend Spring Boot
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros
+cd \sistema-aluguel-carros
 mvn spring-boot:run
 ```
 
