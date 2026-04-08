@@ -80,24 +80,9 @@ Backend em:
 
 `POST http://localhost:8080/clientes`
 
-```json
-{
-  "nome": "Maria Souza",
-  "email": "maria@email.com",
-  "senha": "123456"
-}
-```
-
 ### Login
 
 `POST http://localhost:8080/auth/login`
-
-```json
-{
-  "email": "maria@email.com",
-  "senha": "123456"
-}
-```
 
 ### Listar clientes
 
@@ -111,13 +96,6 @@ Backend em:
 
 `PUT http://localhost:8080/clientes/1`
 
-```json
-{
-  "nome": "Maria Santos",
-  "email": "maria@email.com",
-  "senha": "654321"
-}
-```
 
 ### Deletar cliente
 
