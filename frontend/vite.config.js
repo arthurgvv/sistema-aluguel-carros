@@ -10,7 +10,23 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true
       },
+      "/agentes": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
       "/auth": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
+      "/automoveis": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
+      "/pedidos": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      },
+      "/contratos": {
         target: "http://localhost:8080",
         changeOrigin: true
       }

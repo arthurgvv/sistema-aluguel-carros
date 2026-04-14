@@ -9,7 +9,11 @@ import {
 const formularioInicial = {
   nome: "",
   email: "",
-  senha: ""
+  senha: "",
+  cpf: "",
+  rg: "",
+  profissao: "",
+  endereco: ""
 };
 
 export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarSucesso }) {
@@ -31,8 +35,12 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
         const cliente = await buscarClientePorId(clienteId);
         setFormulario({
           nome: cliente.nome || "",
-          email: cliente.email || "",
-          senha: ""
+          email: cliente.email || cliente.login || "",
+          senha: "",
+          cpf: cliente.cpf || "",
+          rg: cliente.rg || "",
+          profissao: cliente.profissao || "",
+          endereco: cliente.endereco || ""
         });
       } catch (error) {
         setErro(error.message || "Nao foi possivel carregar o cliente para edicao.");
@@ -58,11 +66,21 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
     setSalvando(true);
 
     try {
+      const payload = {
+        nome: formulario.nome,
+        email: formulario.email,
+        senha: formulario.senha,
+        cpf: formulario.cpf || null,
+        rg: formulario.rg || null,
+        profissao: formulario.profissao || null,
+        endereco: formulario.endereco || null
+      };
+
       if (modo === "editar") {
-        await atualizarCliente(clienteId, formulario);
+        await atualizarCliente(clienteId, payload);
         salvarMensagemTemporaria("Cliente atualizado com sucesso.");
       } else {
-        await cadastrarCliente(formulario);
+        await cadastrarCliente(payload);
         salvarMensagemTemporaria("Cliente cadastrado com sucesso.");
       }
 
@@ -103,12 +121,12 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
         <form className="form-card" onSubmit={salvar}>
           <div className="form-grid">
             <label>
-              Nome
+              Nome *
               <input name="nome" value={formulario.nome} onChange={atualizarCampo} required />
             </label>
 
             <label>
-              E-mail
+              E-mail *
               <input
                 name="email"
                 type="email"
@@ -119,13 +137,54 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
             </label>
 
             <label>
-              Senha
+              Senha *
               <input
                 name="senha"
                 type="password"
                 value={formulario.senha}
                 onChange={atualizarCampo}
                 required
+              />
+            </label>
+
+            <div className="form-grid form-grid--2col">
+              <label>
+                CPF
+                <input
+                  name="cpf"
+                  value={formulario.cpf}
+                  onChange={atualizarCampo}
+                  placeholder="000.000.000-00"
+                />
+              </label>
+              <label>
+                RG
+                <input
+                  name="rg"
+                  value={formulario.rg}
+                  onChange={atualizarCampo}
+                  placeholder="00.000.000-0"
+                />
+              </label>
+            </div>
+
+            <label>
+              Profissao
+              <input
+                name="profissao"
+                value={formulario.profissao}
+                onChange={atualizarCampo}
+                placeholder="Ex: Engenheiro, Medico..."
+              />
+            </label>
+
+            <label>
+              Endereco
+              <input
+                name="endereco"
+                value={formulario.endereco}
+                onChange={atualizarCampo}
+                placeholder="Rua, numero, bairro, cidade"
               />
             </label>
           </div>

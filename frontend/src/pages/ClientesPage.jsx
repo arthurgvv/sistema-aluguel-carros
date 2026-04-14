@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { consumirMensagemTemporaria, deletarCliente, listarClientes } from "../services/clientesApi";
 
-export default function ClientesPage({ clienteLogado, onEditarCliente, onNovoCliente, onSair }) {
+export default function ClientesPage({
+  clienteLogado,
+  onEditarCliente,
+  onNovoCliente,
+  onSair,
+  onVerAutomoveis,
+  onVerPedidos
+}) {
   const [clientes, setClientes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -44,17 +51,17 @@ export default function ClientesPage({ clienteLogado, onEditarCliente, onNovoCli
     <section className="page-card">
       <header className="split-header">
         <div>
-          <p className="eyebrow">Tela principal do CRUD</p>
+          <p className="eyebrow">Painel do cliente</p>
           <h1>Clientes cadastrados</h1>
           <p className="page-subtitle">
-            Liste, edite e exclua clientes em uma pagina separada do formulario.
+            Liste, edite e exclua clientes cadastrados no sistema.
           </p>
         </div>
 
         <div className="header-actions">
           <div className="user-chip">
             <strong>{clienteLogado?.nome}</strong>
-            <span>{clienteLogado?.email}</span>
+            <span>{clienteLogado?.email || clienteLogado?.login}</span>
           </div>
 
           <button type="button" className="secondary-button" onClick={onSair}>
@@ -67,6 +74,16 @@ export default function ClientesPage({ clienteLogado, onEditarCliente, onNovoCli
         <button type="button" className="primary-button" onClick={onNovoCliente}>
           Novo cliente
         </button>
+        {onVerAutomoveis && (
+          <button type="button" className="secondary-button" onClick={onVerAutomoveis}>
+            Ver automoveis
+          </button>
+        )}
+        {onVerPedidos && (
+          <button type="button" className="secondary-button" onClick={onVerPedidos}>
+            Meus pedidos
+          </button>
+        )}
         <button type="button" className="ghost-button" onClick={carregarClientes}>
           Atualizar lista
         </button>
@@ -97,6 +114,8 @@ export default function ClientesPage({ clienteLogado, onEditarCliente, onNovoCli
                 <th>ID</th>
                 <th>Nome</th>
                 <th>E-mail</th>
+                <th>CPF</th>
+                <th>Profissao</th>
                 <th>Acoes</th>
               </tr>
             </thead>
@@ -106,6 +125,8 @@ export default function ClientesPage({ clienteLogado, onEditarCliente, onNovoCli
                   <td>{cliente.id}</td>
                   <td>{cliente.nome}</td>
                   <td>{cliente.email}</td>
+                  <td>{cliente.cpf || "—"}</td>
+                  <td>{cliente.profissao || "—"}</td>
                   <td>
                     <div className="row-actions">
                       <button
