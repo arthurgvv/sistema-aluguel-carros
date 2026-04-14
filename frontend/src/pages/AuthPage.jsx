@@ -125,15 +125,9 @@ export default function AuthPage({ onLoginSucesso }) {
       {/* Left panel */}
       <div className="auth-split-left">
         <div className="auth-split-left-content">
-          <div className="auth-brand-icon">
-            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="56" height="56" rx="14" fill="rgba(255,255,255,0.12)" />
-              <path d="M10 30 L14 20 C14.8 18.2 16.6 17 18.5 17 L37.5 17 C39.4 17 41.2 18.2 42 20 L46 30 L46 38 C46 39.1 45.1 40 44 40 L42 40 C42 41.7 40.7 43 39 43 C37.3 43 36 41.7 36 40 L20 40 C20 41.7 18.7 43 17 43 C15.3 43 14 41.7 14 40 L12 40 C10.9 40 10 39.1 10 38 Z" fill="white" opacity="0.9"/>
-              <circle cx="17" cy="40" r="3" fill="rgba(17,93,67,0.8)" />
-              <circle cx="39" cy="40" r="3" fill="rgba(17,93,67,0.8)" />
-              <rect x="16" y="21" width="24" height="8" rx="2" fill="rgba(17,93,67,0.6)" />
-              <rect x="10" y="31" width="36" height="2" fill="rgba(255,255,255,0.3)" />
-            </svg>
+          <div className="auth-brand-eyebrow">
+            <span className="auth-brand-eyebrow-line" />
+            <span className="auth-brand-eyebrow-text">Plataforma de Aluguel</span>
           </div>
           <h1 className="auth-brand-title">Sistema de<br />Aluguel de<br />Carros</h1>
           <p className="auth-brand-subtitle">
@@ -203,44 +197,46 @@ export default function AuthPage({ onLoginSucesso }) {
                 <input tabIndex="-1" type="text" name="fake_u" autoComplete="username" />
                 <input tabIndex="-1" type="password" name="fake_p" autoComplete="current-password" />
               </div>
-              <div className="auth-field">
-                <label className="auth-field-label" htmlFor="login-email">
-                  E-mail ou login
-                </label>
-                <input
-                  id="login-email"
-                  className="auth-field-input"
-                  name="login"
-                  type="text"
-                  autoComplete="off"
-                  inputMode="email"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  data-lpignore="true"
-                  data-1p-ignore="true"
-                  placeholder="seu@email.com"
-                  value={loginForm.login}
-                  onChange={atualizarCampo(setLoginForm)}
-                  required
-                />
-              </div>
-              <div className="auth-field">
-                <label className="auth-field-label" htmlFor="login-senha">
-                  Senha
-                </label>
-                <input
-                  id="login-senha"
-                  className="auth-field-input"
-                  name="senha"
-                  type="password"
-                  autoComplete="new-password"
-                  data-lpignore="true"
-                  data-1p-ignore="true"
-                  placeholder="••••••••"
-                  value={loginForm.senha}
-                  onChange={atualizarCampo(setLoginForm)}
-                  required
-                />
+              <div className="auth-field-grid">
+                <div className="auth-field">
+                  <label className="auth-field-label" htmlFor="login-email">
+                    E-mail ou login
+                  </label>
+                  <input
+                    id="login-email"
+                    className="auth-field-input"
+                    name="login"
+                    type="text"
+                    autoComplete="off"
+                    inputMode="email"
+                    autoCapitalize="none"
+                    spellCheck="false"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    placeholder="seu@email.com"
+                    value={loginForm.login}
+                    onChange={atualizarCampo(setLoginForm)}
+                    required
+                  />
+                </div>
+                <div className="auth-field">
+                  <label className="auth-field-label" htmlFor="login-senha">
+                    Senha
+                  </label>
+                  <input
+                    id="login-senha"
+                    className="auth-field-input"
+                    name="senha"
+                    type="password"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    placeholder="••••••••"
+                    value={loginForm.senha}
+                    onChange={atualizarCampo(setLoginForm)}
+                    required
+                  />
+                </div>
               </div>
               <button className="auth-submit-btn" type="submit" disabled={carregando}>
                 {carregando ? "Entrando..." : "Entrar"}
