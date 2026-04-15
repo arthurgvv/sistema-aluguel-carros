@@ -6,8 +6,9 @@ const NAV_EMPRESA = [
 ];
 
 const NAV_BANCO = [
-  { rota: "pedidos", label: "Pedidos" },
-  { rota: "perfil",  label: "Perfil" },
+  { rota: "pedidos",           label: "Pedidos" },
+  { rota: "contratos-credito", label: "Contratos" },
+  { rota: "perfil",            label: "Perfil" },
 ];
 
 const NAV_CLIENTE = [
@@ -23,6 +24,7 @@ const ROTA_PAI = {
   "credito-pedido": "pedidos",
   "novo-cliente":   "clientes",
   "editar-cliente": "clientes",
+  "contratos-credito": "contratos-credito",
 };
 
 export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, children }) {

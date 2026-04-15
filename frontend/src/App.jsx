@@ -4,6 +4,7 @@ import AutomoveisPage from "./pages/AutomoveisPage";
 import ClienteFormPage from "./pages/ClienteFormPage";
 import ClientesPage from "./pages/ClientesPage";
 import ContratoCreditoPage from "./pages/ContratoCreditoPage";
+import ContratosCredito from "./pages/ContratosCredito";
 import EditarPedidoPage from "./pages/EditarPedidoPage";
 import EmpregadoresPage from "./pages/EmpregadoresPage";
 import NovoPedidoPage from "./pages/NovoPedidoPage";
@@ -38,6 +39,7 @@ function lerRota() {
   if (partes[0] === "pedidos" && partes[1] === "novo") return { nome: "novo-pedido" };
   if (partes[0] === "pedidos" && partes[1] && partes[2] === "editar") return { nome: "editar-pedido", id: Number(partes[1]) };
   if (partes[0] === "pedidos" && partes[1] === "credito") return { nome: "credito-pedido" };
+  if (partes[0] === "contratos-credito") return { nome: "contratos-credito" };
   if (partes[0] === "perfil") return { nome: "perfil" };
 
   return { nome: "auth" };
@@ -83,7 +85,7 @@ export default function App() {
     const banco = agente && usuarioLogado?.tipo === "BANCO";
     const empresa = agente && usuarioLogado?.tipo === "EMPRESA";
     const apenasEmpresa = ["clientes", "novo-cliente", "editar-cliente"];
-    const apenasBanco   = ["credito-pedido"];
+    const apenasBanco   = ["credito-pedido", "contratos-credito"];
     const apenasCliente = ["novo-pedido", "editar-pedido", "empregadores"];
     if (logado && !agente && (apenasEmpresa.includes(rota) || apenasBanco.includes(rota))) {
       navegar(rotaInicial(usuarioLogado));
@@ -195,6 +197,7 @@ export default function App() {
         <PedidosPage
           usuarioLogado={usuarioLogado}
           onNovoPedido={!isAgente ? () => navegar("#/pedidos/novo") : null}
+          onEditarPedido={!isAgente ? (id) => navegar(`#/pedidos/${id}/editar`) : null}
           onConcederCredito={isBanco ? abrirCreditoPedido : null}
         />
       )}
@@ -213,6 +216,11 @@ export default function App() {
           onCancelar={() => navegar("#/pedidos")}
           onSucesso={() => navegar("#/pedidos")}
         />
+      )}
+
+      {/* Agente banco: contratos de credito concedidos */}
+      {rotaAtual.nome === "contratos-credito" && isBanco && (
+        <ContratosCredito usuarioLogado={usuarioLogado} />
       )}
 
       {/* Perfil */}

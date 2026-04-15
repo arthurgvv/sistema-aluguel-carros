@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { criarContratoCredito } from "../services/clientesApi";
 
-const formInicial = { valor: "", parcelas: "12" };
+const formInicial = { valorFinanciado: "", numeroParcelas: "12" };
 
 export default function ContratoCreditoPage({ pedido, usuarioLogado, onCancelar, onSucesso }) {
-  const [formulario, setFormulario] = useState(formInicial);
+  const [formulario, setFormulario] = useState({
+    ...formInicial,
+    valorFinanciado: pedido?.valorTotal ? String(pedido.valorTotal) : ""
+  });
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -14,10 +17,10 @@ export default function ContratoCreditoPage({ pedido, usuarioLogado, onCancelar,
   }
 
   function calcularParcela() {
-    if (!formulario.valor || !formulario.parcelas) return null;
+    if (!formulario.valorFinanciado || !formulario.numeroParcelas) return null;
     const taxaMensal = (usuarioLogado?.taxaJuros ?? 2) / 100;
-    const n = parseInt(formulario.parcelas, 10);
-    const pv = parseFloat(formulario.valor);
+    const n = parseInt(formulario.numeroParcelas, 10);
+    const pv = parseFloat(formulario.valorFinanciado);
     if (n <= 0 || pv <= 0) return null;
     const parcela = (pv * taxaMensal) / (1 - Math.pow(1 + taxaMensal, -n));
     return parcela.toFixed(2);
@@ -29,9 +32,9 @@ export default function ContratoCreditoPage({ pedido, usuarioLogado, onCancelar,
     setErro("");
     try {
       await criarContratoCredito({
-        valor: parseFloat(formulario.valor),
-        parcelas: parseInt(formulario.parcelas, 10),
-        banco: { id: usuarioLogado.id },
+        valorFinanciado: parseFloat(formulario.valorFinanciado),
+        parcelas: parseInt(formulario.numeroParcelas, 10),
+        banco: { id: usuarioLogado.id, tipo: "BANCO" },
         pedidoAluguel: { id: pedido.id }
       });
       onSucesso();
@@ -67,12 +70,12 @@ export default function ContratoCreditoPage({ pedido, usuarioLogado, onCancelar,
             <label>
               Valor financiado (R$) *
               <input
-                name="valor"
+                name="valorFinanciado"
                 type="number"
                 min="0"
                 step="0.01"
                 placeholder="Ex: 15000.00"
-                value={formulario.valor}
+                value={formulario.valorFinanciado}
                 onChange={atualizarCampo}
                 required
               />
@@ -80,12 +83,12 @@ export default function ContratoCreditoPage({ pedido, usuarioLogado, onCancelar,
             <label>
               Numero de parcelas *
               <input
-                name="parcelas"
+                name="numeroParcelas"
                 type="number"
                 min="1"
                 max="60"
                 placeholder="Ex: 12"
-                value={formulario.parcelas}
+                value={formulario.numeroParcelas}
                 onChange={atualizarCampo}
                 required
               />

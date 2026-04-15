@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   aprovarPedido,
   avaliarPedido,
+  buscarClientePorId,
+  cancelarPedido,
   encerrarContratoAluguel,
   listarPedidos,
   listarPedidosPorCliente,
@@ -59,14 +61,17 @@ function calcularEstatisticas(pedidos) {
   return { totalAlugado, proximaRetirada, proximaDevolucao };
 }
 
-export default function PedidosPage({ usuarioLogado, onNovoPedido, onConcederCredito }) {
+export default function PedidosPage({ usuarioLogado, onNovoPedido, onEditarPedido, onConcederCredito }) {
   const [pedidos, setPedidos] = useState([]);
+  const [rendaMap, setRendaMap] = useState({});
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [processando, setProcessando] = useState(null);
 
   const isAgente = usuarioLogado?.tipoUsuario === "AGENTE";
+  const isBanco  = isAgente && usuarioLogado?.tipo === "BANCO";
+  const isEmpresa = isAgente && usuarioLogado?.tipo === "EMPRESA";
 
   async function carregar() {
     setCarregando(true);
@@ -75,7 +80,21 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onConcederCre
       const lista = isAgente
         ? await listarPedidos()
         : await listarPedidosPorCliente(usuarioLogado.id);
-      setPedidos(lista || []);
+      const pedidosCarregados = lista || [];
+      setPedidos(pedidosCarregados);
+
+      if (isBanco && pedidosCarregados.length > 0) {
+        const idsUnicos = [...new Set(pedidosCarregados.map(p => p.cliente?.id).filter(Boolean))];
+        const resultados = await Promise.allSettled(idsUnicos.map(id => buscarClientePorId(id)));
+        const mapa = {};
+        resultados.forEach((res, i) => {
+          if (res.status === "fulfilled" && res.value) {
+            const emps = res.value.empregadores || [];
+            mapa[idsUnicos[i]] = emps.reduce((acc, e) => acc + (e.rendimento || 0), 0);
+          }
+        });
+        setRendaMap(mapa);
+      }
     } catch (error) {
       setErro(error.message || "Nao foi possivel carregar os pedidos.");
     } finally {
@@ -176,7 +195,17 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onConcederCre
         <div className="empty-state">
           <h2>Nenhum pedido encontrado</h2>
           {!isAgente && onNovoPedido && (
-            <p>Clique em &ldquo;Novo pedido&rdquo; para solicitar seu primeiro aluguel.</p>
+            <>
+              <p>Voce ainda nao possui pedidos de aluguel.</p>
+              <button
+                type="button"
+                className="primary-button btn-gradient"
+                style={{ marginTop: "16px" }}
+                onClick={onNovoPedido}
+              >
+                + Novo pedido
+              </button>
+            </>
           )}
         </div>
       )}
@@ -203,11 +232,12 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onConcederCre
             <thead>
               <tr>
                 {isAgente && <th>Cliente</th>}
+                {isBanco && <th>Renda mensal</th>}
                 <th>Veiculo</th>
                 <th>Periodo</th>
                 <th>Valor</th>
                 <th>Status</th>
-                {isAgente && <th>Acoes</th>}
+                <th style={{ textAlign: "center" }}>Acoes</th>
               </tr>
             </thead>
             <tbody>
@@ -215,6 +245,13 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onConcederCre
                 <tr key={pedido.id}>
                   {isAgente && (
                     <td>{pedido.cliente?.nome || `Cliente #${pedido.cliente?.id}`}</td>
+                  )}
+                  {isBanco && (
+                    <td>
+                      {rendaMap[pedido.cliente?.id] != null
+                        ? formatarMoeda(rendaMap[pedido.cliente.id])
+                        : <span className="text-muted">—</span>}
+                    </td>
                   )}
                   <td>
                     <div className="vehicle-cell">
@@ -241,69 +278,102 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onConcederCre
                       {STATUS_LABELS[pedido.status] || pedido.status}
                     </span>
                   </td>
-                  {isAgente && (
-                    <td>
-                      <div className="row-actions">
-                        {pedido.status === "PENDENTE" && (
+                  <td style={{ textAlign: "center" }}>
+                    <div className="row-actions" style={{ justifyContent: "center" }}>
+                      {/* Acoes da EMPRESA */}
+                      {isEmpresa && pedido.status === "PENDENTE" && (
+                        <button
+                          type="button"
+                          className="secondary-button"
+                          disabled={processando === pedido.id}
+                          onClick={() => executarAcao(avaliarPedido, pedido.id, "Iniciar analise")}
+                        >
+                          Analisar
+                        </button>
+                      )}
+                      {isEmpresa && (pedido.status === "PENDENTE" || pedido.status === "EM_ANALISE") && (
+                        <>
                           <button
                             type="button"
-                            className="secondary-button"
+                            className="primary-button"
                             disabled={processando === pedido.id}
-                            onClick={() => executarAcao(avaliarPedido, pedido.id, "Iniciar analise")}
+                            onClick={() => executarAcao(aprovarPedido, pedido.id, "Aprovar pedido")}
                           >
-                            Analisar
+                            Aprovar
                           </button>
-                        )}
-                        {(pedido.status === "PENDENTE" || pedido.status === "EM_ANALISE") && (
-                          <>
+                          <button
+                            type="button"
+                            className="danger-button"
+                            disabled={processando === pedido.id}
+                            onClick={() => executarAcao(rejeitarPedido, pedido.id, "Rejeitar pedido")}
+                          >
+                            Rejeitar
+                          </button>
+                        </>
+                      )}
+                      {isEmpresa && pedido.status === "APROVADO" && pedido.contratoAluguel?.id && (
+                        <button
+                          type="button"
+                          className="ghost-button"
+                          disabled={processando === pedido.id}
+                          onClick={() => executarAcao(
+                            () => encerrarContratoAluguel(pedido.contratoAluguel.id),
+                            pedido.id,
+                            "Encerrar contrato"
+                          )}
+                        >
+                          Encerrar
+                        </button>
+                      )}
+
+                      {/* Acao do BANCO */}
+                      {isBanco && pedido.status === "APROVADO" && !pedido.contratoCredito && onConcederCredito && (
+                        <button
+                          type="button"
+                          className="secondary-button"
+                          disabled={processando === pedido.id}
+                          onClick={() => onConcederCredito(pedido)}
+                        >
+                          Credito
+                        </button>
+                      )}
+
+                      {/* Acoes do CLIENTE */}
+                      {!isAgente && pedido.status === "PENDENTE" && (
+                        <>
+                          {onEditarPedido && (
                             <button
                               type="button"
-                              className="primary-button"
+                              className="secondary-button"
                               disabled={processando === pedido.id}
-                              onClick={() => executarAcao(aprovarPedido, pedido.id, "Aprovar pedido")}
+                              onClick={() => onEditarPedido(pedido.id)}
                             >
-                              Aprovar
+                              Editar
                             </button>
-                            <button
-                              type="button"
-                              className="danger-button"
-                              disabled={processando === pedido.id}
-                              onClick={() => executarAcao(rejeitarPedido, pedido.id, "Rejeitar pedido")}
-                            >
-                              Rejeitar
-                            </button>
-                          </>
-                        )}
-                        {pedido.status === "APROVADO" && pedido.contratoAluguel?.id && (
+                          )}
                           <button
                             type="button"
-                            className="ghost-button"
+                            className="danger-button"
                             disabled={processando === pedido.id}
-                            onClick={() => executarAcao(
-                              () => encerrarContratoAluguel(pedido.contratoAluguel.id),
-                              pedido.id,
-                              "Encerrar contrato"
-                            )}
+                            onClick={() => executarAcao(cancelarPedido, pedido.id, "Cancelar pedido")}
                           >
-                            Encerrar
+                            Cancelar
                           </button>
-                        )}
-                        {usuarioLogado?.tipo === "BANCO" && pedido.status === "APROVADO" && !pedido.contratoCredito && onConcederCredito && (
-                          <button
-                            type="button"
-                            className="secondary-button"
-                            disabled={processando === pedido.id}
-                            onClick={() => onConcederCredito(pedido)}
-                          >
-                            Credito
-                          </button>
-                        )}
-                        {(pedido.status === "REJEITADO" || pedido.status === "CANCELADO" || pedido.status === "CONCLUIDO") && (
-                          <span className="text-muted">—</span>
-                        )}
-                      </div>
-                    </td>
-                  )}
+                        </>
+                      )}
+
+                      {/* Sem acoes disponíveis */}
+                      {isEmpresa && ["REJEITADO", "CANCELADO", "CONCLUIDO"].includes(pedido.status) && (
+                        <span className="text-muted">—</span>
+                      )}
+                      {isBanco && !(pedido.status === "APROVADO" && !pedido.contratoCredito) && (
+                        <span className="text-muted">—</span>
+                      )}
+                      {!isAgente && pedido.status !== "PENDENTE" && (
+                        <span className="text-muted">—</span>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
