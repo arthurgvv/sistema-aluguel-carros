@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
+  atualizarAutomovel,
   cadastrarAutomovel,
   deletarAutomovel,
   listarAutomoveis,
@@ -13,10 +14,20 @@ const formularioInicial = {
   marca: "",
   modelo: "",
   ano: "",
-  isDisponivel: true
+  isDisponivel: true,
+  imagemBase64: null
 };
 
-export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
+function lerArquivoBase64(arquivo) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(arquivo);
+  });
+}
+
+export default function AutomoveisPage({ usuarioLogado }) {
   const [automoveis, setAutomoveis] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -24,6 +35,10 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [formulario, setFormulario] = useState(formularioInicial);
   const [salvando, setSalvando] = useState(false);
+  const [uploadando, setUploadando] = useState(null);
+
+  const inputNovaImagem = useRef(null);
+  const inputsImagem = useRef({});
 
   const isAgente = usuarioLogado?.tipoUsuario === "AGENTE";
 
@@ -32,7 +47,11 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
     setErro("");
     try {
       const lista = await listarAutomoveis();
-      setAutomoveis(lista || []);
+      const ordenada = (lista || []).sort((a, b) => {
+        if (a.isDisponivel === b.isDisponivel) return 0;
+        return a.isDisponivel ? -1 : 1;
+      });
+      setAutomoveis(ordenada);
     } catch (error) {
       setErro(error.message || "Nao foi possivel carregar os automoveis.");
     } finally {
@@ -50,6 +69,13 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
       ...atual,
       [name]: type === "checkbox" ? checked : value
     }));
+  }
+
+  async function selecionarImagemNova(event) {
+    const arquivo = event.target.files?.[0];
+    if (!arquivo) return;
+    const base64 = await lerArquivoBase64(arquivo);
+    setFormulario((atual) => ({ ...atual, imagemBase64: base64 }));
   }
 
   async function salvar(event) {
@@ -98,44 +124,50 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
     }
   }
 
+  async function trocarImagem(automovel, event) {
+    const arquivo = event.target.files?.[0];
+    if (!arquivo) return;
+    setUploadando(automovel.id);
+    setErro("");
+    try {
+      const base64 = await lerArquivoBase64(arquivo);
+      await atualizarAutomovel(automovel.id, { ...automovel, imagemBase64: base64 });
+      setMensagem("Imagem atualizada com sucesso.");
+      await carregar();
+    } catch (error) {
+      setErro(error.message || "Nao foi possivel atualizar a imagem.");
+    } finally {
+      setUploadando(null);
+    }
+  }
+
   return (
     <section className="page-card">
       <header className="split-header">
         <div>
           <p className="eyebrow">Frota de veiculos</p>
           <h1>Automoveis</h1>
-          <p className="page-subtitle">Visualize e gerencie a frota disponivel para aluguel.</p>
+          <p className="page-subtitle">
+            {isAgente
+              ? "Gerencie a frota disponivel para aluguel."
+              : "Consulte os veiculos disponiveis para alugar."}
+          </p>
         </div>
         <div className="header-actions">
-          <div className="user-chip">
-            <strong>{usuarioLogado?.nome || usuarioLogado?.nomeFantasia || usuarioLogado?.login}</strong>
-            <span>{usuarioLogado?.tipoUsuario}</span>
-          </div>
-          {onVoltar && (
-            <button type="button" className="ghost-button" onClick={onVoltar}>
-              Voltar
+          {isAgente && (
+            <button
+              type="button"
+              className="primary-button btn-gradient"
+              onClick={() => { setMostrarFormulario(!mostrarFormulario); setErro(""); }}
+            >
+              {mostrarFormulario ? "Cancelar" : "+ Novo automovel"}
             </button>
           )}
-          <button type="button" className="secondary-button" onClick={onSair}>
-            Sair
+          <button type="button" className="ghost-button" onClick={carregar}>
+            Atualizar
           </button>
         </div>
       </header>
-
-      <div className="toolbar">
-        {isAgente && (
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => { setMostrarFormulario(!mostrarFormulario); setErro(""); }}
-          >
-            {mostrarFormulario ? "Cancelar" : "+ Novo automovel"}
-          </button>
-        )}
-        <button type="button" className="ghost-button" onClick={carregar}>
-          Atualizar
-        </button>
-      </div>
 
       {mostrarFormulario && isAgente && (
         <form className="form-card" onSubmit={salvar} style={{ marginBottom: "24px" }}>
@@ -160,6 +192,26 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
             <label>
               Ano *
               <input name="ano" type="number" min="1900" max="2100" value={formulario.ano} onChange={atualizarCampo} required />
+            </label>
+            <label className="img-upload-label">
+              Foto do veiculo
+              <input
+                ref={inputNovaImagem}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={selecionarImagemNova}
+              />
+              <div className="img-upload-area">
+                {formulario.imagemBase64 ? (
+                  <img src={formulario.imagemBase64} alt="Preview" className="img-upload-preview" />
+                ) : (
+                  <div className="img-upload-preview-placeholder">Selecionar foto</div>
+                )}
+                <span className="img-upload-hint">
+                  {formulario.imagemBase64 ? "Clique para trocar" : "Clique para selecionar"}
+                </span>
+              </div>
             </label>
           </div>
           <div className="form-actions">
@@ -192,7 +244,7 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
           <table className="clients-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Foto</th>
                 <th>Marca / Modelo</th>
                 <th>Placa</th>
                 <th>Ano</th>
@@ -203,7 +255,26 @@ export default function AutomoveisPage({ usuarioLogado, onSair, onVoltar }) {
             <tbody>
               {automoveis.map((auto) => (
                 <tr key={auto.id}>
-                  <td>{auto.id}</td>
+                  <td
+                    style={{ width: "72px", cursor: isAgente ? "pointer" : "default" }}
+                    onClick={isAgente ? () => inputsImagem.current[auto.id]?.click() : undefined}
+                    title={isAgente ? (uploadando === auto.id ? "Enviando..." : "Clique para trocar a foto") : undefined}
+                  >
+                    {isAgente && (
+                      <input
+                        ref={el => { inputsImagem.current[auto.id] = el; }}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => trocarImagem(auto, e)}
+                      />
+                    )}
+                    {auto.imagemBase64 ? (
+                      <img src={auto.imagemBase64} alt={`${auto.marca} ${auto.modelo}`} className="car-thumb" />
+                    ) : (
+                      <div className="car-thumb-placeholder" />
+                    )}
+                  </td>
                   <td>
                     <strong>{auto.marca}</strong> {auto.modelo}
                   </td>

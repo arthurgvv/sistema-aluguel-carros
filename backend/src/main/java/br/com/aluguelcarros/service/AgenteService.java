@@ -1,6 +1,8 @@
 package br.com.aluguelcarros.service;
 
 import br.com.aluguelcarros.model.Agente;
+import br.com.aluguelcarros.model.Banco;
+import br.com.aluguelcarros.model.Empresa;
 import br.com.aluguelcarros.model.LoginRequest;
 import br.com.aluguelcarros.repository.AgenteRepository;
 import org.springframework.data.domain.Sort;
@@ -72,7 +74,14 @@ public class AgenteService {
                 ? agenteAtualizado.getNomeFantasia().trim()
                 : null);
         agenteExistente.setCnpj(agenteAtualizado.getCnpj());
-        agenteExistente.setTipo(agenteAtualizado.getTipo());
+
+        if (agenteExistente instanceof Banco bancoExistente && agenteAtualizado instanceof Banco bancoAtualizado) {
+            bancoExistente.setCodigo(bancoAtualizado.getCodigo());
+            bancoExistente.setTaxaJuros(bancoAtualizado.getTaxaJuros());
+        } else if (agenteExistente instanceof Empresa empresaExistente && agenteAtualizado instanceof Empresa empresaAtualizada) {
+            empresaExistente.setRamoAtividade(empresaAtualizada.getRamoAtividade());
+            empresaExistente.setSetor(empresaAtualizada.getSetor());
+        }
 
         return agenteRepository.save(agenteExistente);
     }

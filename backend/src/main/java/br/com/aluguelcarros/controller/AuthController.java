@@ -1,7 +1,9 @@
 package br.com.aluguelcarros.controller;
 
 import br.com.aluguelcarros.model.Agente;
+import br.com.aluguelcarros.model.Banco;
 import br.com.aluguelcarros.model.Cliente;
+import br.com.aluguelcarros.model.Empresa;
 import br.com.aluguelcarros.model.LoginRequest;
 import br.com.aluguelcarros.service.AgenteService;
 import br.com.aluguelcarros.service.ClienteService;
@@ -114,6 +116,13 @@ public class AuthController {
         map.put("cnpj", agente.getCnpj());
         map.put("nomeFantasia", agente.getNomeFantasia());
         map.put("tipo", agente.getTipo());
+        if (agente instanceof Banco banco) {
+            map.put("codigo", banco.getCodigo());
+            map.put("taxaJuros", banco.getTaxaJuros());
+        } else if (agente instanceof Empresa empresa) {
+            map.put("ramoAtividade", empresa.getRamoAtividade());
+            map.put("setor", empresa.getSetor());
+        }
         return map;
     }
 }

@@ -35,6 +35,9 @@ public class Automovel {
     @Column(nullable = false)
     private Boolean isDisponivel = true;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String imagemBase64;
+
     public Automovel() {
     }
 
@@ -92,5 +95,13 @@ public class Automovel {
 
     public void setIsDisponivel(Boolean isDisponivel) {
         this.isDisponivel = isDisponivel;
+    }
+
+    public String getImagemBase64() {
+        return imagemBase64;
+    }
+
+    public void setImagemBase64(String imagemBase64) {
+        this.imagemBase64 = imagemBase64;
     }
 }

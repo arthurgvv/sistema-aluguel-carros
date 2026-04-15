@@ -261,3 +261,10 @@ export function aprovarContratoCredito(id) {
 export function recusarContratoCredito(id) {
   return requisicao(`/contratos/credito/${id}/recusar`, { method: "PUT" });
 }
+
+export function criarContratoCredito(payload) {
+  return requisicao("/contratos/credito", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}

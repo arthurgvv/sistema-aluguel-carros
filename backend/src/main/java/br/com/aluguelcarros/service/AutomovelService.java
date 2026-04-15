@@ -72,6 +72,7 @@ public class AutomovelService {
         if (automovelAtualizado.getIsDisponivel() != null) {
             automovelExistente.setIsDisponivel(automovelAtualizado.getIsDisponivel());
         }
+        automovelExistente.setImagemBase64(automovelAtualizado.getImagemBase64());
 
         return automovelRepository.save(automovelExistente);
     }

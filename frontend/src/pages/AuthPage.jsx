@@ -25,7 +25,11 @@ const cadastroAgenteInicial = {
   senha: "",
   nomeFantasia: "",
   cnpj: "",
-  tipo: "EMPRESA"
+  tipo: "EMPRESA",
+  ramoAtividade: "",
+  setor: "",
+  codigo: "",
+  taxaJuros: ""
 };
 
 export default function AuthPage({ onLoginSucesso }) {
@@ -102,13 +106,21 @@ export default function AuthPage({ onLoginSucesso }) {
     setCarregando(true);
 
     try {
-      await cadastrarAgente({
+      const payloadAgente = {
         login: cadastroAgenteForm.login,
         senha: cadastroAgenteForm.senha,
         nomeFantasia: cadastroAgenteForm.nomeFantasia,
         cnpj: cadastroAgenteForm.cnpj || null,
         tipo: cadastroAgenteForm.tipo
-      });
+      };
+      if (cadastroAgenteForm.tipo === "EMPRESA") {
+        payloadAgente.ramoAtividade = cadastroAgenteForm.ramoAtividade || null;
+        payloadAgente.setor = cadastroAgenteForm.setor || null;
+      } else if (cadastroAgenteForm.tipo === "BANCO") {
+        payloadAgente.codigo = cadastroAgenteForm.codigo || null;
+        payloadAgente.taxaJuros = cadastroAgenteForm.taxaJuros ? parseFloat(cadastroAgenteForm.taxaJuros) : null;
+      }
+      await cadastrarAgente(payloadAgente);
       setCadastroAgenteForm(cadastroAgenteInicial);
       setLoginForm({ login: cadastroAgenteForm.login, senha: "" });
       mudarAba("login");
@@ -451,6 +463,66 @@ export default function AuthPage({ onLoginSucesso }) {
                         </select>
                       </div>
                     </div>
+
+                    {cadastroAgenteForm.tipo === "EMPRESA" && (
+                      <div className="auth-field-row">
+                        <div className="auth-field">
+                          <label className="auth-field-label" htmlFor="ag-ramo">Ramo de atividade</label>
+                          <input
+                            id="ag-ramo"
+                            className="auth-field-input"
+                            name="ramoAtividade"
+                            type="text"
+                            placeholder="Ex: Locacao de veiculos"
+                            value={cadastroAgenteForm.ramoAtividade}
+                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                          />
+                        </div>
+                        <div className="auth-field">
+                          <label className="auth-field-label" htmlFor="ag-setor">Setor</label>
+                          <input
+                            id="ag-setor"
+                            className="auth-field-input"
+                            name="setor"
+                            type="text"
+                            placeholder="Ex: Transporte"
+                            value={cadastroAgenteForm.setor}
+                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {cadastroAgenteForm.tipo === "BANCO" && (
+                      <div className="auth-field-row">
+                        <div className="auth-field">
+                          <label className="auth-field-label" htmlFor="ag-codigo">Codigo do banco</label>
+                          <input
+                            id="ag-codigo"
+                            className="auth-field-input"
+                            name="codigo"
+                            type="text"
+                            placeholder="Ex: 001"
+                            value={cadastroAgenteForm.codigo}
+                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                          />
+                        </div>
+                        <div className="auth-field">
+                          <label className="auth-field-label" htmlFor="ag-taxa">Taxa de juros (% a.m.) *</label>
+                          <input
+                            id="ag-taxa"
+                            className="auth-field-input"
+                            name="taxaJuros"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Ex: 1.5"
+                            value={cadastroAgenteForm.taxaJuros}
+                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <button className="auth-submit-btn" type="submit" disabled={carregando}>
                     {carregando ? "Cadastrando..." : "Criar conta de agente"}

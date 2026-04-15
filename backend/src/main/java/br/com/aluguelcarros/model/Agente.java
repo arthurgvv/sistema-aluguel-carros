@@ -1,6 +1,8 @@
 package br.com.aluguelcarros.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -14,6 +16,11 @@ import jakarta.persistence.Table;
 @DiscriminatorValue("AGENTE")
 @PrimaryKeyJoinColumn(name = "usuario_id")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "tipo", visible = true, defaultImpl = Agente.class)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = Banco.class, name = "BANCO"),
+    @JsonSubTypes.Type(value = Empresa.class, name = "EMPRESA")
+})
 public class Agente extends Usuario {
 
     @Column(length = 18, unique = true)

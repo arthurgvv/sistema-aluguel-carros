@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { consumirMensagemTemporaria, deletarCliente, listarClientes } from "../services/clientesApi";
 
-export default function ClientesPage({
-  clienteLogado,
-  onEditarCliente,
-  onNovoCliente,
-  onSair,
-  onVerAutomoveis,
-  onVerPedidos
-}) {
+export default function ClientesPage({ onEditarCliente, onNovoCliente }) {
   const [clientes, setClientes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -17,7 +10,6 @@ export default function ClientesPage({
   async function carregarClientes() {
     setCarregando(true);
     setErro("");
-
     try {
       const resposta = await listarClientes();
       setClientes(resposta || []);
@@ -33,11 +25,7 @@ export default function ClientesPage({
   }, []);
 
   async function excluir(id) {
-    const confirmou = window.confirm("Deseja realmente excluir este cliente?");
-    if (!confirmou) {
-      return;
-    }
-
+    if (!window.confirm("Deseja realmente excluir este cliente?")) return;
     try {
       await deletarCliente(id);
       setMensagem("Cliente excluido com sucesso.");
@@ -49,64 +37,42 @@ export default function ClientesPage({
 
   return (
     <section className="page-card">
-      <header className="split-header">
+      <header className="page-header">
         <div>
-          <p className="eyebrow">Painel do cliente</p>
-          <h1>Clientes cadastrados</h1>
+          <p className="eyebrow">Painel do agente</p>
+          <h1>Clientes</h1>
           <p className="page-subtitle">
-            Liste, edite e exclua clientes cadastrados no sistema.
+            Gerencie os clientes cadastrados no sistema.
           </p>
-        </div>
-
-        <div className="header-actions">
-          <div className="user-chip">
-            <strong>{clienteLogado?.nome}</strong>
-            <span>{clienteLogado?.email || clienteLogado?.login}</span>
-          </div>
-
-          <button type="button" className="secondary-button" onClick={onSair}>
-            Sair
-          </button>
         </div>
       </header>
 
       <div className="toolbar">
         <button type="button" className="primary-button" onClick={onNovoCliente}>
-          Novo cliente
+          + Novo cliente
         </button>
-        {onVerAutomoveis && (
-          <button type="button" className="secondary-button" onClick={onVerAutomoveis}>
-            Ver automoveis
-          </button>
-        )}
-        {onVerPedidos && (
-          <button type="button" className="secondary-button" onClick={onVerPedidos}>
-            Meus pedidos
-          </button>
-        )}
         <button type="button" className="ghost-button" onClick={carregarClientes}>
-          Atualizar lista
+          Atualizar
         </button>
       </div>
 
-      {erro ? <p className="feedback error">{erro}</p> : null}
-      {mensagem ? <p className="feedback success">{mensagem}</p> : null}
+      {erro && <p className="feedback error">{erro}</p>}
+      {mensagem && <p className="feedback success">{mensagem}</p>}
 
-      {carregando ? (
+      {carregando && (
         <div className="empty-state">
           <h2>Carregando clientes...</h2>
-          <p>Aguarde a leitura dos registros no banco H2.</p>
         </div>
-      ) : null}
+      )}
 
-      {!carregando && clientes.length === 0 ? (
+      {!carregando && clientes.length === 0 && (
         <div className="empty-state">
           <h2>Nenhum cliente cadastrado</h2>
-          <p>Crie o primeiro cliente para iniciar o CRUD completo.</p>
+          <p>Clique em &ldquo;Novo cliente&rdquo; para cadastrar o primeiro.</p>
         </div>
-      ) : null}
+      )}
 
-      {!carregando && clientes.length > 0 ? (
+      {!carregando && clientes.length > 0 && (
         <div className="table-wrapper">
           <table className="clients-table">
             <thead>
@@ -150,7 +116,7 @@ export default function ClientesPage({
             </tbody>
           </table>
         </div>
-      ) : null}
+      )}
     </section>
   );
 }
