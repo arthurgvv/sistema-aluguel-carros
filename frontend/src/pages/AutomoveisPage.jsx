@@ -28,7 +28,12 @@ function lerArquivoBase64(arquivo) {
   });
 }
 
-export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel }) {
+export default function AutomoveisPage({
+  usuarioLogado,
+  onSelecionarAutomovel,
+  onEntrar,
+  acaoSelecionarLabel = "Selecionar carro"
+}) {
   const [automoveis, setAutomoveis] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -42,6 +47,7 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
   const inputsImagem = useRef({});
 
   const isAgente = usuarioLogado?.tipoUsuario === "AGENTE";
+  const podeSelecionar = !isAgente && typeof onSelecionarAutomovel === "function";
 
   async function carregar() {
     setCarregando(true);
@@ -164,6 +170,11 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
               {mostrarFormulario ? "Cancelar" : "+ Novo automovel"}
             </button>
           )}
+          {!usuarioLogado && typeof onEntrar === "function" && (
+            <button type="button" className="primary-button btn-gradient" onClick={onEntrar}>
+              Entrar
+            </button>
+          )}
           <button type="button" className="ghost-button" onClick={carregar}>
             Atualizar
           </button>
@@ -247,8 +258,7 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
             return (
             <div
               key={auto.id}
-              className={`car-card${onSelecionarAutomovel && auto.isDisponivel ? " car-card--selectable" : ""}`}
-              onClick={onSelecionarAutomovel && auto.isDisponivel ? () => onSelecionarAutomovel(auto) : undefined}
+              className={`car-card${podeSelecionar && auto.isDisponivel ? " car-card--selectable" : ""}`}
             >
               {isAgente && (
                 <input
@@ -315,6 +325,19 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
                     onClick={() => excluir(auto.id)}
                   >
                     Excluir
+                  </button>
+                </div>
+              )}
+
+              {!isAgente && podeSelecionar && (
+                <div className="car-card-actions">
+                  <button
+                    type="button"
+                    className="primary-button btn-gradient"
+                    disabled={!auto.isDisponivel}
+                    onClick={() => onSelecionarAutomovel(auto)}
+                  >
+                    {auto.isDisponivel ? acaoSelecionarLabel : "Indisponivel"}
                   </button>
                 </div>
               )}

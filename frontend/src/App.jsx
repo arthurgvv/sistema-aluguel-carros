@@ -12,6 +12,7 @@ import OfertasCreditoPage from "./pages/OfertasCreditoPage";
 import PedidosPage from "./pages/PedidosPage";
 import PerfilClientePage from "./pages/PerfilClientePage";
 import PerfilAgentePage from "./pages/PerfilAgentePage";
+import PublicHomePage from "./pages/PublicHomePage";
 import Layout from "./components/Layout";
 
 const STORAGE_KEY = "sistema-aluguel-carros-usuario-logado";
@@ -26,10 +27,11 @@ function lerUsuarioLogado() {
 }
 
 function lerRota() {
-  const hash = window.location.hash || "#/auth";
+  const hash = window.location.hash || "#/inicio";
   const rota = hash.replace(/^#/, "");
   const partes = rota.split("/").filter(Boolean);
 
+  if (partes.length === 0 || partes[0] === "inicio") return { nome: "inicio" };
   if (partes[0] === "clientes" && partes.length === 1) return { nome: "clientes" };
   if (partes[0] === "clientes" && partes[1] === "novo") return { nome: "novo-cliente" };
   if (partes[0] === "clientes" && partes[1] && partes[2] === "editar") return { nome: "editar-cliente", id: Number(partes[1]) };
@@ -60,7 +62,7 @@ export default function App() {
 
   useEffect(() => {
     if (!window.location.hash) {
-      navegar(usuarioLogado ? rotaInicial(usuarioLogado) : "#/auth");
+      navegar(usuarioLogado ? rotaInicial(usuarioLogado) : "#/inicio");
     }
     const atualizarRota = () => setRotaAtual(lerRota());
     window.addEventListener("hashchange", atualizarRota);
@@ -73,8 +75,8 @@ export default function App() {
     const rota = rotaAtual.nome;
 
     // Não logado tentando acessar rota protegida
-    if (!logado && rota !== "auth") {
-      navegar("#/auth");
+    if (!logado && !["inicio", "auth"].includes(rota)) {
+      navegar("#/inicio");
       return;
     }
 
@@ -121,6 +123,13 @@ export default function App() {
   function registrarSessao(usuario) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(usuario));
     setUsuarioLogado(usuario);
+
+    if (automovelSelecionado && usuario?.tipoUsuario !== "AGENTE") {
+      navegar("#/pedidos/novo");
+      return;
+    }
+
+    setAutomovelSelecionado(null);
     navegar(rotaInicial(usuario));
   }
 
@@ -133,7 +142,9 @@ export default function App() {
   function encerrarSessao() {
     localStorage.removeItem(STORAGE_KEY);
     setUsuarioLogado(null);
-    navegar("#/auth");
+    setAutomovelSelecionado(null);
+    setPedidoCredito(null);
+    navegar("#/inicio");
   }
 
   function abrirCreditoPedido(pedido) {
@@ -143,6 +154,17 @@ export default function App() {
 
   function abrirNovoPedidoComAutomovel(automovel) {
     setAutomovelSelecionado(automovel);
+
+    if (!usuarioLogado) {
+      navegar("#/auth");
+      return;
+    }
+
+    if (usuarioLogado?.tipoUsuario === "AGENTE") {
+      navegar(rotaInicial(usuarioLogado));
+      return;
+    }
+
     navegar("#/pedidos/novo");
   }
 
@@ -150,10 +172,24 @@ export default function App() {
   const isBanco  = isAgente && usuarioLogado?.tipo === "BANCO";
   const isEmpresa = isAgente && usuarioLogado?.tipo === "EMPRESA";
 
+  if (rotaAtual.nome === "inicio") {
+    return (
+      <main className="page-shell">
+        <PublicHomePage
+          onEntrar={() => navegar("#/auth")}
+          onSelecionarAutomovel={abrirNovoPedidoComAutomovel}
+        />
+      </main>
+    );
+  }
+
   if (rotaAtual.nome === "auth") {
     return (
       <main className="page-shell">
-        <AuthPage onLoginSucesso={registrarSessao} />
+        <AuthPage
+          onLoginSucesso={registrarSessao}
+          onVoltarInicio={() => navegar("#/inicio")}
+        />
       </main>
     );
   }

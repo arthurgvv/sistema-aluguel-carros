@@ -43,8 +43,7 @@ export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, ch
     <div className="app-layout">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="sidebar-brand-name">Locadora</span>
-          <span className="sidebar-brand-sub">Sistema de Aluguel</span>
+          <img src="/bycars.png" alt="byCars" className="sidebar-brand-logo" />
         </div>
 
         <nav className="sidebar-nav">
@@ -72,6 +71,10 @@ export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, ch
 
       <div className="layout-body">
         <header className="top-bar">
+          <div className="top-bar-logo-wrap" aria-hidden="true">
+            <img src="/bycarspng.png" alt="byCars" className="top-bar-logo" />
+          </div>
+
           <div className="top-bar-user">
             <strong>{nome}</strong>
             <span>{tipo}</span>

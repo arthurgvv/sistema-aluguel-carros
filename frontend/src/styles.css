@@ -71,6 +71,48 @@ button { cursor: pointer; }
   align-items: stretch;
 }
 
+.page-shell:has(.public-site) {
+  background: var(--bg);
+}
+
+/* ============================================================
+   PUBLIC HOME
+   ============================================================ */
+
+.public-site {
+  min-height: 100vh;
+}
+
+.public-top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  background: rgba(249, 249, 249, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.public-top-bar-logo {
+  width: 136px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.08));
+}
+
+.public-fleet-section {
+  position: relative;
+  z-index: 1;
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  padding: 22px 18px 40px;
+}
+
 /* ============================================================
    APP LAYOUT — sidebar + content
    ============================================================ */
@@ -97,10 +139,16 @@ button { cursor: pointer; }
 
 .sidebar-brand {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
   padding: 0 12px;
   margin-bottom: 40px;
+}
+
+.sidebar-brand-logo {
+  width: 150px;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .sidebar-brand-name {
@@ -234,6 +282,24 @@ button { cursor: pointer; }
   padding: 0 48px;
   z-index: 90;
   border-bottom: 1px solid var(--line);
+}
+
+.top-bar-logo-wrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.top-bar-logo {
+  width: 132px;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.08));
 }
 
 .top-bar-user {
@@ -1015,12 +1081,36 @@ h2 {
 
 .car-card-actions .ghost-button,
 .car-card-actions .danger-button,
-.car-card-actions .secondary-button {
+.car-card-actions .secondary-button,
+.car-card-actions .primary-button {
   flex: 1;
   padding: 7px 8px;
   font-size: 0.7rem;
   letter-spacing: 0.06em;
   text-align: center;
+}
+
+/* Mantem o hover estavel na vitrine, sem "pular" layout */
+.car-card:hover {
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--line-strong);
+  transform: none;
+}
+
+.car-card--selectable:hover {
+  border-color: var(--primary);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+}
+
+.car-card--selectable:hover .car-card-body::after {
+  content: none;
+}
+
+.car-card-actions .ghost-button:hover:not(:disabled),
+.car-card-actions .danger-button:hover:not(:disabled),
+.car-card-actions .secondary-button:hover:not(:disabled),
+.car-card-actions .primary-button:hover:not(:disabled) {
+  transform: none;
 }
 
 @media (max-width: 768px) {
@@ -1117,11 +1207,25 @@ h2 {
   .layout-content { padding: 88px 28px 40px; }
 }
 
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
   .sidebar { display: none; }
   .layout-body { margin-left: 0; }
   .top-bar { left: 0; }
+  .top-bar-logo { width: 104px; }
   .layout-content { padding: 80px 18px 32px; }
+
+  .public-top-bar {
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .public-top-bar-logo {
+    width: 108px;
+  }
+
+  .public-fleet-section {
+    padding: 16px 12px 24px;
+  }
 
   .split-header, .page-header, .header-actions, .toolbar, .form-actions {
     flex-direction: column;
@@ -1190,6 +1294,56 @@ h2 {
   position: relative;
   z-index: 2;
   max-width: 380px;
+}
+
+.auth-split-left-content--logo {
+  max-width: 480px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.auth-back-icon {
+  position: absolute;
+  top: 34px;
+  left: 34px;
+  z-index: 3;
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  transition: background var(--transition), transform var(--transition), border-color var(--transition);
+}
+
+.auth-back-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.auth-brand-logo {
+  width: min(440px, 100%);
+  object-fit: contain;
+  filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.35));
+}
+
+.auth-brand-slogan {
+  margin: 4px 0 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1.14rem;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
 }
 
 .auth-brand-eyebrow {
@@ -1525,9 +1679,29 @@ h2 {
   .auth-split-left {
     padding: 40px 28px 36px;
     min-height: 220px;
-    align-items: flex-end;
+    align-items: center;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .auth-split-left-content--logo {
+    gap: 18px;
+  }
+
+  .auth-back-icon {
+    top: 18px;
+    left: 18px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .auth-brand-logo {
+    width: min(280px, 100%);
+  }
+
+  .auth-brand-slogan {
+    font-size: 0.92rem;
+    letter-spacing: 0.1em;
   }
 
   .auth-brand-title { font-size: 2.4rem; margin-bottom: 0; }

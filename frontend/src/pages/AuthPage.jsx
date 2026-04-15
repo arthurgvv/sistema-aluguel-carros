@@ -32,7 +32,7 @@ const cadastroAgenteInicial = {
   taxaJuros: ""
 };
 
-export default function AuthPage({ onLoginSucesso }) {
+export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
   const [abaAtiva, setAbaAtiva] = useState("login");
   const [tipoRegistro, setTipoRegistro] = useState("cliente");
   const [loginForm, setLoginForm] = useState(loginInicial);
@@ -136,29 +136,32 @@ export default function AuthPage({ onLoginSucesso }) {
     <div className="auth-split-layout">
       {/* Left panel */}
       <div className="auth-split-left">
-        <div className="auth-split-left-content">
-          <div className="auth-brand-eyebrow">
-            <span className="auth-brand-eyebrow-line" />
-            <span className="auth-brand-eyebrow-text">Plataforma de Aluguel</span>
-          </div>
-          <h1 className="auth-brand-title">Sistema de<br />Aluguel de<br />Carros</h1>
-          <p className="auth-brand-subtitle">
-            Gerencie pedidos, contratos e veiculos em um unico lugar. Acesso para clientes e agentes.
+        {onVoltarInicio && (
+          <button
+            type="button"
+            className="auth-back-icon"
+            onClick={onVoltarInicio}
+            aria-label="Voltar ao site"
+            title="Voltar ao site"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
+        <div className="auth-split-left-content auth-split-left-content--logo">
+          <img src="/bycarspng.png" alt="byCars" className="auth-brand-logo" />
+          <p className="auth-brand-slogan">
+            "Melhor Preço
+            <br />
+            Melhor Investimento"
           </p>
-          <div className="auth-brand-features">
-            <div className="auth-brand-feature">
-              <span className="auth-brand-feature-dot" />
-              Pedidos de aluguel online
-            </div>
-            <div className="auth-brand-feature">
-              <span className="auth-brand-feature-dot" />
-              Contratos digitais
-            </div>
-            <div className="auth-brand-feature">
-              <span className="auth-brand-feature-dot" />
-              Gestao de frota em tempo real
-            </div>
-          </div>
         </div>
       </div>
 
