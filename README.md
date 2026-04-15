@@ -306,11 +306,11 @@ npm run build
 
 ## Autores
 
-| Nome | GitHub |
-|------|--------|
-| Arthur | [@arthurgvv](https://github.com/arthurgvv) |
-
-> Se o trabalho for em grupo, voce pode completar esta tabela com os demais integrantes antes da entrega final.
+| Nome | GitHub | LinkedIn | Gmail |
+|------|--------|----------|-------|
+| Arthur Goncalves | <div align="center"><a href="https://github.com/arthurgvv"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="42" height="42" alt="GitHub Arthur Goncalves"></a></div> | <div align="center"><a href="https://www.linkedin.com/in/arthur-goncalves-62b15232a/"><img src="https://joaopauloaramuni.github.io/image/linkedin2.png" width="42" height="42" alt="LinkedIn Arthur Goncalves"></a></div> | <div align="center"><a href="mailto:arthurgvkj@gmail.com"><img src="https://joaopauloaramuni.github.io/image/gmail3.png" width="42" height="42" alt="Gmail Arthur Goncalves"></a></div> |
+| Matheus Guilherme | <div align="center"><a href="https://github.com/theuzao"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="42" height="42" alt="GitHub Matheus Guilherme"></a></div> | <div align="center">-</div> | <div align="center">-</div> |
+| Miguel Moreira | <div align="center"><a href="https://github.com/mmoreira41"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="42" height="42" alt="GitHub Miguel Moreira"></a></div> | <div align="center">-</div> | <div align="center">-</div> |
 
 ---
 
@@ -319,4 +319,3 @@ npm run build
 - Professor e disciplina, pelo direcionamento academico do projeto.
 - Equipe do trabalho, pela divisao das entregas e validacao dos requisitos.
 - Documentacoes oficiais de Spring Boot, React, Vite e H2, que apoiaram a implementacao.
-
