@@ -9,6 +9,7 @@ import {
   listarPedidosPorCliente,
   rejeitarPedido
 } from "../services/clientesApi";
+import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
 
 const STATUS_LABELS = {
   PENDENTE: "Pendente",
@@ -255,9 +256,9 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onEditarPedid
                   )}
                   <td>
                     <div className="vehicle-cell">
-                      {pedido.automovel?.imagemBase64 ? (
+                      {srcFotoAutomovel(pedido.automovel) ? (
                         <img
-                          src={pedido.automovel.imagemBase64}
+                          src={srcFotoAutomovel(pedido.automovel)}
                           alt={`${pedido.automovel.marca} ${pedido.automovel.modelo}`}
                           className="car-thumb"
                         />

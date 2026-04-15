@@ -4,6 +4,7 @@ import {
   listarOfertasCreditoCliente,
   recusarContratoCredito
 } from "../services/clientesApi";
+import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
 
 const STATUS_LABELS = {
   PENDENTE: "Pendente",
@@ -126,9 +127,9 @@ export default function OfertasCreditoPage({ usuarioLogado }) {
                     <td>{oferta.banco?.nomeFantasia || `Banco #${oferta.banco?.id || "—"}`}</td>
                     <td>
                       <div className="vehicle-cell">
-                        {oferta.pedidoAluguel?.automovel?.imagemBase64 ? (
+                        {srcFotoAutomovel(oferta.pedidoAluguel?.automovel) ? (
                           <img
-                            src={oferta.pedidoAluguel.automovel.imagemBase64}
+                            src={srcFotoAutomovel(oferta.pedidoAluguel.automovel)}
                             alt={`${oferta.pedidoAluguel.automovel.marca} ${oferta.pedidoAluguel.automovel.modelo}`}
                             className="car-thumb"
                           />

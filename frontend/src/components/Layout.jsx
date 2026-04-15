@@ -7,6 +7,7 @@ const NAV_EMPRESA = [
 
 const NAV_BANCO = [
   { rota: "pedidos",           label: "Pedidos" },
+  { rota: "automoveis",      label: "Frota" },
   { rota: "contratos-credito", label: "Contratos" },
   { rota: "perfil",            label: "Perfil" },
 ];

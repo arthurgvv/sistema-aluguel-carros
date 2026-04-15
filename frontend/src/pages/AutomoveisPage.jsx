@@ -7,6 +7,7 @@ import {
   marcarAutomovelDisponivel,
   marcarAutomovelIndisponivel
 } from "../services/clientesApi";
+import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
 
 const formularioInicial = {
   matricula: "",
@@ -241,7 +242,9 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
 
       {!carregando && automoveis.length > 0 && (
         <div className="cars-grid">
-          {automoveis.map((auto) => (
+          {automoveis.map((auto) => {
+            const fotoSrc = srcFotoAutomovel(auto);
+            return (
             <div
               key={auto.id}
               className={`car-card${onSelecionarAutomovel && auto.isDisponivel ? " car-card--selectable" : ""}`}
@@ -258,8 +261,8 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
               )}
 
               <div className="car-card-photo">
-                {auto.imagemBase64 ? (
-                  <img src={auto.imagemBase64} alt={`${auto.marca} ${auto.modelo}`} />
+                {fotoSrc ? (
+                  <img src={fotoSrc} alt={`${auto.marca} ${auto.modelo}`} />
                 ) : (
                   <div className="car-card-photo-placeholder">
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -316,7 +319,8 @@ export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel })
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

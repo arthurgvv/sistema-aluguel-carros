@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { cancelarContratoCredito, listarContratosCredito } from "../services/clientesApi";
+import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
 
 const STATUS_LABELS = {
   PENDENTE: "Pendente",
@@ -148,9 +149,9 @@ export default function ContratosCredito({ usuarioLogado }) {
                     </td>
                     <td>
                       <div className="vehicle-cell">
-                        {contrato.pedidoAluguel?.automovel?.imagemBase64 ? (
+                        {srcFotoAutomovel(contrato.pedidoAluguel?.automovel) ? (
                           <img
-                            src={contrato.pedidoAluguel.automovel.imagemBase64}
+                            src={srcFotoAutomovel(contrato.pedidoAluguel.automovel)}
                             alt={`${contrato.pedidoAluguel.automovel.marca} ${contrato.pedidoAluguel.automovel.modelo}`}
                             className="car-thumb"
                           />
