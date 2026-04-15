@@ -8,6 +8,7 @@ import ContratosCredito from "./pages/ContratosCredito";
 import EditarPedidoPage from "./pages/EditarPedidoPage";
 import EmpregadoresPage from "./pages/EmpregadoresPage";
 import NovoPedidoPage from "./pages/NovoPedidoPage";
+import OfertasCreditoPage from "./pages/OfertasCreditoPage";
 import PedidosPage from "./pages/PedidosPage";
 import PerfilClientePage from "./pages/PerfilClientePage";
 import PerfilAgentePage from "./pages/PerfilAgentePage";
@@ -40,6 +41,7 @@ function lerRota() {
   if (partes[0] === "pedidos" && partes[1] && partes[2] === "editar") return { nome: "editar-pedido", id: Number(partes[1]) };
   if (partes[0] === "pedidos" && partes[1] === "credito") return { nome: "credito-pedido" };
   if (partes[0] === "contratos-credito") return { nome: "contratos-credito" };
+  if (partes[0] === "ofertas-credito") return { nome: "ofertas-credito" };
   if (partes[0] === "perfil") return { nome: "perfil" };
 
   return { nome: "auth" };
@@ -86,7 +88,7 @@ export default function App() {
     const empresa = agente && usuarioLogado?.tipo === "EMPRESA";
     const apenasEmpresa = ["clientes", "novo-cliente", "editar-cliente"];
     const apenasBanco   = ["credito-pedido", "contratos-credito"];
-    const apenasCliente = ["novo-pedido", "editar-pedido", "empregadores"];
+    const apenasCliente = ["novo-pedido", "editar-pedido", "empregadores", "ofertas-credito"];
     if (logado && !agente && (apenasEmpresa.includes(rota) || apenasBanco.includes(rota))) {
       navegar(rotaInicial(usuarioLogado));
       return;
@@ -216,6 +218,9 @@ export default function App() {
           onCancelar={() => navegar("#/pedidos")}
           onSucesso={() => navegar("#/pedidos")}
         />
+      )}
+      {rotaAtual.nome === "ofertas-credito" && !isAgente && (
+        <OfertasCreditoPage usuarioLogado={usuarioLogado} />
       )}
 
       {/* Agente banco: contratos de credito concedidos */}

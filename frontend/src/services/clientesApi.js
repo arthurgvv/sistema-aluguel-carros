@@ -254,6 +254,10 @@ export function listarContratosCredito() {
   return requisicao("/contratos/credito");
 }
 
+export function listarOfertasCreditoCliente(clienteId) {
+  return requisicao(`/contratos/credito/cliente/${clienteId}`);
+}
+
 export function aprovarContratoCredito(id) {
   return requisicao(`/contratos/credito/${id}/aprovar`, { method: "PUT" });
 }
@@ -267,4 +271,8 @@ export function criarContratoCredito(payload) {
     method: "POST",
     body: JSON.stringify(payload)
   });
+}
+
+export function cancelarContratoCredito(id) {
+  return requisicao(`/contratos/credito/${id}/cancelar`, { method: "PUT" });
 }

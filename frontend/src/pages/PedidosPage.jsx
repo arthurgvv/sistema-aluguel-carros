@@ -361,7 +361,6 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onEditarPedid
                           </button>
                         </>
                       )}
-
                       {/* Sem acoes disponíveis */}
                       {isEmpresa && ["REJEITADO", "CANCELADO", "CONCLUIDO"].includes(pedido.status) && (
                         <span className="text-muted">—</span>

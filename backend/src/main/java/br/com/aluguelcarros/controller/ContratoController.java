@@ -90,6 +90,11 @@ public class ContratoController {
         return ResponseEntity.ok(contratoCreditoService.listarContratos());
     }
 
+    @GetMapping("/credito/cliente/{clienteId}")
+    public ResponseEntity<List<ContratoCredito>> listarContratosCreditoPorCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(contratoCreditoService.listarContratosPorCliente(clienteId));
+    }
+
     @GetMapping("/credito/{id}")
     public ResponseEntity<?> buscarContratoCreditoPorId(@PathVariable Long id) {
         try {
@@ -119,6 +124,17 @@ public class ContratoController {
             return ResponseEntity.ok(contratoCreditoService.recusar(id));
         } catch (NoSuchElementException exception) {
             return erro(HttpStatus.NOT_FOUND, exception.getMessage());
+        }
+    }
+
+    @PutMapping("/credito/{id}/cancelar")
+    public ResponseEntity<?> cancelarContratoCredito(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(contratoCreditoService.cancelar(id));
+        } catch (NoSuchElementException exception) {
+            return erro(HttpStatus.NOT_FOUND, exception.getMessage());
+        } catch (IllegalStateException exception) {
+            return erro(HttpStatus.CONFLICT, exception.getMessage());
         }
     }
 

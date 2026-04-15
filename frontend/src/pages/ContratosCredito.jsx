@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
-import { listarContratosCredito } from "../services/clientesApi";
+import { cancelarContratoCredito, listarContratosCredito } from "../services/clientesApi";
 
 const STATUS_LABELS = {
-  ATIVO: "Ativo",
-  ENCERRADO: "Encerrado",
+  PENDENTE: "Pendente",
+  APROVADO: "Aprovado",
   RECUSADO: "Recusado",
-  PENDENTE: "Pendente"
+  CANCELADO: "Cancelado"
 };
 
 const STATUS_CLASS = {
-  ATIVO: "status-badge--aprovado",
-  ENCERRADO: "status-badge--concluido",
+  PENDENTE: "status-badge--pendente",
+  APROVADO: "status-badge--aprovado",
   RECUSADO: "status-badge--rejeitado",
-  PENDENTE: "status-badge--pendente"
+  CANCELADO: "status-badge--cancelado"
 };
 
 function formatarMoeda(valor) {
@@ -29,6 +29,8 @@ export default function ContratosCredito({ usuarioLogado }) {
   const [contratos, setContratos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const [processando, setProcessando] = useState(null);
 
   async function carregar() {
     setCarregando(true);
@@ -43,13 +45,28 @@ export default function ContratosCredito({ usuarioLogado }) {
     }
   }
 
+  async function cancelar(id) {
+    if (!window.confirm("Confirmar cancelamento deste contrato?")) return;
+    setProcessando(id);
+    setErro("");
+    try {
+      await cancelarContratoCredito(id);
+      setMensagem("Contrato cancelado com sucesso.");
+      await carregar();
+    } catch (error) {
+      setErro(error.message || "Nao foi possivel cancelar o contrato.");
+    } finally {
+      setProcessando(null);
+    }
+  }
+
   useEffect(() => {
     carregar();
   }, []);
 
   const totalConcedido = contratos
-    .filter(c => c.status === "ATIVO" || c.status === "ENCERRADO")
-    .reduce((acc, c) => acc + (c.valorFinanciado || 0), 0);
+    .filter(c => c.status === "APROVADO" || c.status === "PENDENTE")
+    .reduce((acc, c) => acc + (c.valor || 0), 0);
 
   return (
     <section className="page-card">
@@ -67,20 +84,21 @@ export default function ContratosCredito({ usuarioLogado }) {
             <p className="stat-card-label">Total concedido</p>
             <p className="stat-card-value">{formatarMoeda(totalConcedido)}</p>
             <p className="stat-card-sub">
-              {contratos.filter(c => c.status === "ATIVO").length} contrato(s) ativo(s)
+              {contratos.filter(c => c.status === "APROVADO").length} contrato(s) aprovado(s)
             </p>
           </div>
           <div className="stat-card">
             <p className="stat-card-label">Contratos emitidos</p>
             <p className="stat-card-value">{contratos.length}</p>
             <p className="stat-card-sub">
-              {contratos.filter(c => c.status === "ENCERRADO").length} encerrado(s)
+              {contratos.filter(c => c.status === "RECUSADO").length} recusado(s)
             </p>
           </div>
         </div>
       )}
 
       {erro && <p className="feedback error">{erro}</p>}
+      {mensagem && <p className="feedback success">{mensagem}</p>}
 
       {carregando && (
         <div className="empty-state">
@@ -115,9 +133,9 @@ export default function ContratosCredito({ usuarioLogado }) {
                   <th>Veiculo</th>
                   <th>Valor financiado</th>
                   <th>Parcelas</th>
-                  <th>Valor parcela</th>
                   <th>Data emissao</th>
                   <th>Status</th>
+                  <th style={{ textAlign: "center" }}>Acoes</th>
                 </tr>
               </thead>
               <tbody>
@@ -129,18 +147,44 @@ export default function ContratosCredito({ usuarioLogado }) {
                         || `Cliente #${contrato.pedidoAluguel?.cliente?.id || "—"}`}
                     </td>
                     <td>
-                      {contrato.pedidoAluguel?.automovel
-                        ? `${contrato.pedidoAluguel.automovel.marca} ${contrato.pedidoAluguel.automovel.modelo}`
-                        : `Pedido #${contrato.pedidoAluguel?.id || "—"}`}
+                      <div className="vehicle-cell">
+                        {contrato.pedidoAluguel?.automovel?.imagemBase64 ? (
+                          <img
+                            src={contrato.pedidoAluguel.automovel.imagemBase64}
+                            alt={`${contrato.pedidoAluguel.automovel.marca} ${contrato.pedidoAluguel.automovel.modelo}`}
+                            className="car-thumb"
+                          />
+                        ) : (
+                          <div className="car-thumb-placeholder" />
+                        )}
+                        <span>
+                          {contrato.pedidoAluguel?.automovel
+                            ? `${contrato.pedidoAluguel.automovel.marca} ${contrato.pedidoAluguel.automovel.modelo}`
+                            : `Pedido #${contrato.pedidoAluguel?.id || "—"}`}
+                        </span>
+                      </div>
                     </td>
-                    <td>{formatarMoeda(contrato.valorFinanciado)}</td>
-                    <td>{contrato.numeroParcelas ?? "—"}</td>
-                    <td>{formatarMoeda(contrato.valorParcela)}</td>
-                    <td>{formatarData(contrato.dataEmissao || contrato.dataCriacao)}</td>
+                    <td>{formatarMoeda(contrato.valor)}</td>
+                    <td>{contrato.parcelas ?? "—"}</td>
+                    <td>{formatarData(contrato.dataConcessao)}</td>
                     <td>
                       <span className={`status-badge ${STATUS_CLASS[contrato.status] || ""}`}>
                         {STATUS_LABELS[contrato.status] || contrato.status || "—"}
                       </span>
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {contrato.status === "PENDENTE" ? (
+                        <button
+                          type="button"
+                          className="danger-button"
+                          disabled={processando === contrato.id}
+                          onClick={() => cancelar(contrato.id)}
+                        >
+                          Cancelar
+                        </button>
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

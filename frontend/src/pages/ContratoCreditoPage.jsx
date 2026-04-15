@@ -32,7 +32,7 @@ export default function ContratoCreditoPage({ pedido, usuarioLogado, onCancelar,
     setErro("");
     try {
       await criarContratoCredito({
-        valorFinanciado: parseFloat(formulario.valorFinanciado),
+        valor: parseFloat(formulario.valorFinanciado),
         parcelas: parseInt(formulario.numeroParcelas, 10),
         banco: { id: usuarioLogado.id, tipo: "BANCO" },
         pedidoAluguel: { id: pedido.id }

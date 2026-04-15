@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.time.LocalDate;
@@ -33,10 +34,14 @@ public class ContratoCredito {
     @Column(length = 40)
     private String status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "banco_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Banco banco;
+
+    @OneToOne(mappedBy = "contratoCredito")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "contratoCredito", "contratoAluguel"})
+    private PedidoAluguel pedidoAluguel;
 
     public ContratoCredito() {
     }
@@ -87,5 +92,13 @@ public class ContratoCredito {
 
     public void setBanco(Banco banco) {
         this.banco = banco;
+    }
+
+    public PedidoAluguel getPedidoAluguel() {
+        return pedidoAluguel;
+    }
+
+    public void setPedidoAluguel(PedidoAluguel pedidoAluguel) {
+        this.pedidoAluguel = pedidoAluguel;
     }
 }

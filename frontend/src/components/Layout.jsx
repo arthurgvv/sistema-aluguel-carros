@@ -13,6 +13,7 @@ const NAV_BANCO = [
 
 const NAV_CLIENTE = [
   { rota: "pedidos",      label: "Meus Pedidos" },
+  { rota: "ofertas-credito", label: "Ofertas de Credito" },
   { rota: "automoveis",   label: "Frota" },
   { rota: "empregadores", label: "Empregadores" },
   { rota: "perfil",       label: "Perfil" },
@@ -22,6 +23,7 @@ const ROTA_PAI = {
   "novo-pedido":    "pedidos",
   "editar-pedido":  "pedidos",
   "credito-pedido": "pedidos",
+  "ofertas-credito": "ofertas-credito",
   "novo-cliente":   "clientes",
   "editar-cliente": "clientes",
   "contratos-credito": "contratos-credito",
