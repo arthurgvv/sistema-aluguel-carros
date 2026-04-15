@@ -5,6 +5,7 @@ import br.com.aluguelcarros.model.Empregador;
 import br.com.aluguelcarros.model.LoginRequest;
 import br.com.aluguelcarros.repository.ClienteRepository;
 import br.com.aluguelcarros.repository.EmpregadorRepository;
+import br.com.aluguelcarros.repository.UsuarioRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,14 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final EmpregadorRepository empregadorRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public ClienteService(ClienteRepository clienteRepository, EmpregadorRepository empregadorRepository) {
+    public ClienteService(ClienteRepository clienteRepository,
+                          EmpregadorRepository empregadorRepository,
+                          UsuarioRepository usuarioRepository) {
         this.clienteRepository = clienteRepository;
         this.empregadorRepository = empregadorRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
@@ -28,14 +33,21 @@ public class ClienteService {
         validarCamposObrigatorios(cliente);
 
         String loginNormalizado = normalizarLogin(resolverLogin(cliente));
-        if (clienteRepository.existsByLoginIgnoreCase(loginNormalizado)) {
-            throw new IllegalArgumentException("Ja existe um cliente cadastrado com este login.");
+        String nomeNormalizado = CadastroValidationUtils.normalizarNomePessoa(cliente.getNome());
+        String cpfNormalizado = CadastroValidationUtils.normalizarDocumento(cliente.getCpf(), "CPF", 11);
+        String rgNormalizado = CadastroValidationUtils.normalizarDocumento(cliente.getRg(), "RG", 9);
+        if (usuarioRepository.existsByLoginIgnoreCase(loginNormalizado)) {
+            throw new IllegalArgumentException("Ja existe um usuario cadastrado com este login.");
         }
 
         cliente.setId(null);
-        cliente.setNome(cliente.getNome().trim());
+        cliente.setNome(nomeNormalizado);
         cliente.setLogin(loginNormalizado);
         cliente.setSenha(cliente.getSenha().trim());
+        cliente.setCpf(cpfNormalizado);
+        cliente.setRg(rgNormalizado);
+        cliente.setEndereco(CadastroValidationUtils.normalizarTextoOpcional(cliente.getEndereco()));
+        cliente.setProfissao(CadastroValidationUtils.normalizarTextoOpcional(cliente.getProfissao()));
         return clienteRepository.save(cliente);
     }
 
@@ -56,27 +68,21 @@ public class ClienteService {
 
         Cliente clienteExistente = buscarClientePorId(id);
         String loginNormalizado = normalizarLogin(resolverLogin(clienteAtualizado));
+        String nomeNormalizado = CadastroValidationUtils.normalizarNomePessoa(clienteAtualizado.getNome());
+        String cpfNormalizado = CadastroValidationUtils.normalizarDocumento(clienteAtualizado.getCpf(), "CPF", 11);
+        String rgNormalizado = CadastroValidationUtils.normalizarDocumento(clienteAtualizado.getRg(), "RG", 9);
 
-        if (clienteRepository.existsByLoginIgnoreCaseAndIdNot(loginNormalizado, id)) {
-            throw new IllegalArgumentException("Ja existe outro cliente cadastrado com este login.");
+        if (usuarioRepository.existsByLoginIgnoreCaseAndIdNot(loginNormalizado, id)) {
+            throw new IllegalArgumentException("Ja existe outro usuario cadastrado com este login.");
         }
 
-        clienteExistente.setNome(clienteAtualizado.getNome().trim());
+        clienteExistente.setNome(nomeNormalizado);
         clienteExistente.setLogin(loginNormalizado);
         clienteExistente.setSenha(clienteAtualizado.getSenha().trim());
-
-        if (clienteAtualizado.getRg() != null) {
-            clienteExistente.setRg(clienteAtualizado.getRg().trim());
-        }
-        if (clienteAtualizado.getCpf() != null) {
-            clienteExistente.setCpf(clienteAtualizado.getCpf().trim());
-        }
-        if (clienteAtualizado.getEndereco() != null) {
-            clienteExistente.setEndereco(clienteAtualizado.getEndereco().trim());
-        }
-        if (clienteAtualizado.getProfissao() != null) {
-            clienteExistente.setProfissao(clienteAtualizado.getProfissao().trim());
-        }
+        clienteExistente.setRg(rgNormalizado);
+        clienteExistente.setCpf(cpfNormalizado);
+        clienteExistente.setEndereco(CadastroValidationUtils.normalizarTextoOpcional(clienteAtualizado.getEndereco()));
+        clienteExistente.setProfissao(CadastroValidationUtils.normalizarTextoOpcional(clienteAtualizado.getProfissao()));
 
         return clienteRepository.save(clienteExistente);
     }

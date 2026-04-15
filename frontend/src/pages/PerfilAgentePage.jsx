@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { atualizarAgente, buscarAgentePorId } from "../services/clientesApi";
+import {
+  CNPJ_TAMANHO,
+  montarPayloadAgente,
+  sanitizarCampoAgente,
+  sanitizarNumeros,
+  validarFormularioAgente
+} from "../utils/cadastroValidacao";
 
 export default function PerfilAgentePage({ usuarioLogado, onAtualizar }) {
   const [formulario, setFormulario] = useState({
@@ -27,7 +34,7 @@ export default function PerfilAgentePage({ usuarioLogado, onAtualizar }) {
           nomeFantasia: dados.nomeFantasia || "",
           login: dados.login || "",
           senha: dados.senha || "",
-          cnpj: dados.cnpj || "",
+          cnpj: sanitizarNumeros(dados.cnpj || "", CNPJ_TAMANHO),
           ramoAtividade: dados.ramoAtividade || "",
           setor: dados.setor || "",
           codigo: dados.codigo || "",
@@ -44,30 +51,23 @@ export default function PerfilAgentePage({ usuarioLogado, onAtualizar }) {
 
   function atualizarCampo(event) {
     const { name, value } = event.target;
-    setFormulario((atual) => ({ ...atual, [name]: value }));
+    setFormulario((atual) => ({ ...atual, [name]: sanitizarCampoAgente(name, value) }));
   }
 
   async function salvar(event) {
     event.preventDefault();
-    setSalvando(true);
     setErro("");
     setMensagem("");
+
+    const erroValidacao = validarFormularioAgente(formulario);
+    if (erroValidacao) {
+      setErro(erroValidacao);
+      return;
+    }
+
+    setSalvando(true);
     try {
-      const payload = {
-        nomeFantasia: formulario.nomeFantasia,
-        login: formulario.login,
-        senha: formulario.senha,
-        cnpj: formulario.cnpj,
-        tipo: usuarioLogado.tipo
-      };
-      if (isBanco) {
-        payload.codigo = formulario.codigo;
-        payload.taxaJuros = formulario.taxaJuros ? parseFloat(formulario.taxaJuros) : null;
-      } else {
-        payload.ramoAtividade = formulario.ramoAtividade;
-        payload.setor = formulario.setor;
-      }
-      const atualizado = await atualizarAgente(usuarioLogado.id, payload);
+      const atualizado = await atualizarAgente(usuarioLogado.id, montarPayloadAgente({ ...formulario, tipo: usuarioLogado.tipo }));
       setMensagem("Perfil atualizado com sucesso.");
       if (onAtualizar) onAtualizar(atualizado);
     } catch (error) {
@@ -112,7 +112,7 @@ export default function PerfilAgentePage({ usuarioLogado, onAtualizar }) {
           </label>
           <label>
             CNPJ
-            <input name="cnpj" value={formulario.cnpj} onChange={atualizarCampo} />
+            <input name="cnpj" value={formulario.cnpj} onChange={atualizarCampo} inputMode="numeric" maxLength={CNPJ_TAMANHO} />
           </label>
 
           {isBanco ? (

@@ -1,6 +1,9 @@
 package br.com.aluguelcarros.controller;
 
 import br.com.aluguelcarros.model.Cliente;
+import br.com.aluguelcarros.model.Agente;
+import br.com.aluguelcarros.model.TipoAgente;
+import br.com.aluguelcarros.repository.AgenteRepository;
 import br.com.aluguelcarros.repository.ClienteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,9 +33,13 @@ class ClienteControllerIntegrationTest {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    @Autowired
+    private AgenteRepository agenteRepository;
+
     @BeforeEach
     void setup() {
         clienteRepository.deleteAll();
+        agenteRepository.deleteAll();
     }
 
     @Test
@@ -83,5 +90,64 @@ class ClienteControllerIntegrationTest {
 
         mockMvc.perform(get("/clientes/{id}", cliente.getId()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void naoDevePermitirCadastroDeClienteComLoginJaUsadoPorAgente() throws Exception {
+        Agente agente = new Agente();
+        agente.setLogin("duplicado@email.com");
+        agente.setSenha("123456");
+        agente.setNomeFantasia("Agente Teste");
+        agente.setTipo(TipoAgente.EMPRESA);
+        agenteRepository.save(agente);
+
+        String novoCliente = """
+                {
+                  "nome": "Ana Silva",
+                  "email": "duplicado@email.com",
+                  "senha": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/clientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(novoCliente))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro").value("Ja existe um usuario cadastrado com este login."));
+    }
+
+    @Test
+    void naoDevePermitirCadastroDeClienteComNomeContendoNumero() throws Exception {
+        String novoCliente = """
+                {
+                  "nome": "Ana1 Silva",
+                  "email": "ana@email.com",
+                  "senha": "123456"
+                }
+                """;
+
+        mockMvc.perform(post("/clientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(novoCliente))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro").value("O nome do cliente nao pode conter numeros."));
+    }
+
+    @Test
+    void naoDevePermitirCadastroDeClienteComCpfInvalido() throws Exception {
+        String novoCliente = """
+                {
+                  "nome": "Ana Silva",
+                  "email": "ana@email.com",
+                  "senha": "123456",
+                  "cpf": "12345"
+                }
+                """;
+
+        mockMvc.perform(post("/clientes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(novoCliente))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.erro").value("O CPF deve ter 11 numeros."));
     }
 }

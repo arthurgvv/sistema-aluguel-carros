@@ -5,6 +5,7 @@ import br.com.aluguelcarros.model.Banco;
 import br.com.aluguelcarros.model.Empresa;
 import br.com.aluguelcarros.model.LoginRequest;
 import br.com.aluguelcarros.repository.AgenteRepository;
+import br.com.aluguelcarros.repository.UsuarioRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +17,11 @@ import java.util.NoSuchElementException;
 public class AgenteService {
 
     private final AgenteRepository agenteRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public AgenteService(AgenteRepository agenteRepository) {
+    public AgenteService(AgenteRepository agenteRepository, UsuarioRepository usuarioRepository) {
         this.agenteRepository = agenteRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
@@ -26,19 +29,19 @@ public class AgenteService {
         validarCamposObrigatorios(agente);
 
         String loginNormalizado = normalizarLogin(agente.getLogin());
-        if (agenteRepository.existsByLoginIgnoreCase(loginNormalizado)) {
-            throw new IllegalArgumentException("Ja existe um agente cadastrado com este login.");
+        String cnpjNormalizado = CadastroValidationUtils.normalizarDocumento(agente.getCnpj(), "CNPJ", 14);
+        if (usuarioRepository.existsByLoginIgnoreCase(loginNormalizado)) {
+            throw new IllegalArgumentException("Ja existe um usuario cadastrado com este login.");
         }
-        if (agente.getCnpj() != null && agenteRepository.existsByCnpjIgnoreCase(agente.getCnpj())) {
+        if (cnpjJaExiste(cnpjNormalizado, null)) {
             throw new IllegalArgumentException("Ja existe um agente cadastrado com este CNPJ.");
         }
 
         agente.setId(null);
         agente.setLogin(loginNormalizado);
         agente.setSenha(agente.getSenha().trim());
-        if (agente.getNomeFantasia() != null) {
-            agente.setNomeFantasia(agente.getNomeFantasia().trim());
-        }
+        agente.setNomeFantasia(CadastroValidationUtils.normalizarTextoOpcional(agente.getNomeFantasia()));
+        agente.setCnpj(cnpjNormalizado);
         return agenteRepository.save(agente);
     }
 
@@ -59,21 +62,19 @@ public class AgenteService {
 
         Agente agenteExistente = buscarAgentePorId(id);
         String loginNormalizado = normalizarLogin(agenteAtualizado.getLogin());
+        String cnpjNormalizado = CadastroValidationUtils.normalizarDocumento(agenteAtualizado.getCnpj(), "CNPJ", 14);
 
-        if (agenteRepository.existsByLoginIgnoreCaseAndIdNot(loginNormalizado, id)) {
-            throw new IllegalArgumentException("Ja existe outro agente cadastrado com este login.");
+        if (usuarioRepository.existsByLoginIgnoreCaseAndIdNot(loginNormalizado, id)) {
+            throw new IllegalArgumentException("Ja existe outro usuario cadastrado com este login.");
         }
-        if (agenteAtualizado.getCnpj() != null &&
-                agenteRepository.existsByCnpjIgnoreCaseAndIdNot(agenteAtualizado.getCnpj(), id)) {
+        if (cnpjJaExiste(cnpjNormalizado, id)) {
             throw new IllegalArgumentException("Ja existe outro agente cadastrado com este CNPJ.");
         }
 
         agenteExistente.setLogin(loginNormalizado);
         agenteExistente.setSenha(agenteAtualizado.getSenha().trim());
-        agenteExistente.setNomeFantasia(agenteAtualizado.getNomeFantasia() != null
-                ? agenteAtualizado.getNomeFantasia().trim()
-                : null);
-        agenteExistente.setCnpj(agenteAtualizado.getCnpj());
+        agenteExistente.setNomeFantasia(CadastroValidationUtils.normalizarTextoOpcional(agenteAtualizado.getNomeFantasia()));
+        agenteExistente.setCnpj(cnpjNormalizado);
 
         if (agenteExistente instanceof Banco bancoExistente && agenteAtualizado instanceof Banco bancoAtualizado) {
             bancoExistente.setCodigo(bancoAtualizado.getCodigo());
@@ -132,5 +133,16 @@ public class AgenteService {
 
     private String normalizarLogin(String login) {
         return login.trim().toLowerCase();
+    }
+
+    private boolean cnpjJaExiste(String cnpjNormalizado, Long idIgnorado) {
+        if (cnpjNormalizado == null) {
+            return false;
+        }
+
+        return agenteRepository.findAll().stream()
+                .filter(agente -> idIgnorado == null || !agente.getId().equals(idIgnorado))
+                .map(agente -> CadastroValidationUtils.extrairDigitos(agente.getCnpj()))
+                .anyMatch(cnpjNormalizado::equals);
     }
 }

@@ -116,18 +116,13 @@ export default function App() {
   }, [usuarioLogado, rotaAtual.nome, pedidoCredito]);
 
   function rotaInicial(usuario) {
-    if (usuario?.tipoUsuario === "AGENTE" && usuario?.tipo !== "BANCO") return "#/clientes";
-    return "#/pedidos";
+    if (!usuario) return "#/inicio";
+    return "#/automoveis";
   }
 
   function registrarSessao(usuario) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(usuario));
     setUsuarioLogado(usuario);
-
-    if (automovelSelecionado && usuario?.tipoUsuario !== "AGENTE") {
-      navegar("#/pedidos/novo");
-      return;
-    }
 
     setAutomovelSelecionado(null);
     navegar(rotaInicial(usuario));

@@ -292,7 +292,20 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: transform var(--transition), opacity var(--transition);
+}
+
+.top-bar-logo-wrap:hover {
+  transform: translate(-50%, -50%) scale(1.02);
+}
+
+.top-bar-logo-wrap:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.18);
+  outline-offset: 10px;
 }
 
 .top-bar-logo {

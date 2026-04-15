@@ -7,7 +7,7 @@ const NAV_EMPRESA = [
 
 const NAV_BANCO = [
   { rota: "pedidos",           label: "Pedidos" },
-  { rota: "automoveis",      label: "Frota" },
+  { rota: "automoveis",      label: "Frota de Veiculos" },
   { rota: "contratos-credito", label: "Contratos" },
   { rota: "perfil",            label: "Perfil" },
 ];
@@ -15,7 +15,7 @@ const NAV_BANCO = [
 const NAV_CLIENTE = [
   { rota: "pedidos",      label: "Meus Pedidos" },
   { rota: "ofertas-credito", label: "Ofertas de Credito" },
-  { rota: "automoveis",   label: "Frota" },
+  { rota: "automoveis",   label: "Frota de Veiculos" },
   { rota: "empregadores", label: "Empregadores" },
   { rota: "perfil",       label: "Perfil" },
 ];
@@ -42,10 +42,6 @@ export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, ch
   return (
     <div className="app-layout">
       <aside className="sidebar">
-        <div className="sidebar-brand">
-          <img src="/bycars.png" alt="byCars" className="sidebar-brand-logo" />
-        </div>
-
         <nav className="sidebar-nav">
           {links.map((link) => (
             <button
@@ -71,9 +67,15 @@ export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, ch
 
       <div className="layout-body">
         <header className="top-bar">
-          <div className="top-bar-logo-wrap" aria-hidden="true">
+          <button
+            type="button"
+            className="top-bar-logo-wrap"
+            onClick={() => onNavegar("#/automoveis")}
+            aria-label="Ir para a pagina de automoveis"
+            title="Ir para Automoveis"
+          >
             <img src="/bycarspng.png" alt="byCars" className="top-bar-logo" />
-          </div>
+          </button>
 
           <div className="top-bar-user">
             <strong>{nome}</strong>

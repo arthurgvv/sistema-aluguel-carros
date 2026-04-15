@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
 import { atualizarCliente, buscarClientePorId } from "../services/clientesApi";
+import {
+  CPF_TAMANHO,
+  RG_TAMANHO,
+  montarPayloadCliente,
+  sanitizarCampoCliente,
+  sanitizarNumeros,
+  sanitizarNomePessoa,
+  validarFormularioCliente
+} from "../utils/cadastroValidacao";
 
 export default function PerfilClientePage({ usuarioLogado, onAtualizar }) {
   const [formulario, setFormulario] = useState({
@@ -21,11 +30,11 @@ export default function PerfilClientePage({ usuarioLogado, onAtualizar }) {
       try {
         const dados = await buscarClientePorId(usuarioLogado.id);
         setFormulario({
-          nome: dados.nome || "",
+          nome: sanitizarNomePessoa(dados.nome || ""),
           email: dados.email || dados.login || "",
           senha: dados.senha || "",
-          cpf: dados.cpf || "",
-          rg: dados.rg || "",
+          cpf: sanitizarNumeros(dados.cpf || "", CPF_TAMANHO),
+          rg: sanitizarNumeros(dados.rg || "", RG_TAMANHO),
           profissao: dados.profissao || "",
           endereco: dados.endereco || ""
         });
@@ -40,16 +49,23 @@ export default function PerfilClientePage({ usuarioLogado, onAtualizar }) {
 
   function atualizarCampo(event) {
     const { name, value } = event.target;
-    setFormulario((atual) => ({ ...atual, [name]: value }));
+    setFormulario((atual) => ({ ...atual, [name]: sanitizarCampoCliente(name, value) }));
   }
 
   async function salvar(event) {
     event.preventDefault();
-    setSalvando(true);
     setErro("");
     setMensagem("");
+
+    const erroValidacao = validarFormularioCliente(formulario);
+    if (erroValidacao) {
+      setErro(erroValidacao);
+      return;
+    }
+
+    setSalvando(true);
     try {
-      const atualizado = await atualizarCliente(usuarioLogado.id, formulario);
+      const atualizado = await atualizarCliente(usuarioLogado.id, montarPayloadCliente(formulario));
       setMensagem("Perfil atualizado com sucesso.");
       if (onAtualizar) onAtualizar(atualizado);
     } catch (error) {
@@ -94,11 +110,11 @@ export default function PerfilClientePage({ usuarioLogado, onAtualizar }) {
           </label>
           <label>
             CPF
-            <input name="cpf" value={formulario.cpf} onChange={atualizarCampo} />
+            <input name="cpf" value={formulario.cpf} onChange={atualizarCampo} inputMode="numeric" maxLength={CPF_TAMANHO} />
           </label>
           <label>
             RG
-            <input name="rg" value={formulario.rg} onChange={atualizarCampo} />
+            <input name="rg" value={formulario.rg} onChange={atualizarCampo} inputMode="numeric" maxLength={RG_TAMANHO} />
           </label>
           <label>
             Profissao

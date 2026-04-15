@@ -4,6 +4,17 @@ import {
   cadastrarCliente,
   loginUnificado
 } from "../services/clientesApi";
+import {
+  CNPJ_TAMANHO,
+  CPF_TAMANHO,
+  RG_TAMANHO,
+  montarPayloadAgente,
+  montarPayloadCliente,
+  sanitizarCampoAgente,
+  sanitizarCampoCliente,
+  validarFormularioAgente,
+  validarFormularioCliente
+} from "../utils/cadastroValidacao";
 
 const loginInicial = {
   login: "",
@@ -48,12 +59,19 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
     setMensagem("");
   }
 
-  function atualizarCampo(setter) {
+  function atualizarCampo(setter, sanitizarValor) {
     return (event) => {
       const { name, value } = event.target;
-      setter((atual) => ({ ...atual, [name]: value }));
+      setter((atual) => ({
+        ...atual,
+        [name]: sanitizarValor ? sanitizarValor(name, value) : value
+      }));
     };
   }
+
+  const atualizarLoginForm = atualizarCampo(setLoginForm);
+  const atualizarCadastroCliente = atualizarCampo(setCadastroClienteForm, sanitizarCampoCliente);
+  const atualizarCadastroAgente = atualizarCampo(setCadastroAgenteForm, sanitizarCampoAgente);
 
   async function enviarLogin(event) {
     event.preventDefault();
@@ -76,20 +94,20 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
     event.preventDefault();
     setErro("");
     setMensagem("");
+
+    const erroValidacao = validarFormularioCliente(cadastroClienteForm);
+    if (erroValidacao) {
+      setErro(erroValidacao);
+      return;
+    }
+
     setCarregando(true);
 
     try {
-      await cadastrarCliente({
-        nome: cadastroClienteForm.nome,
-        email: cadastroClienteForm.email,
-        senha: cadastroClienteForm.senha,
-        cpf: cadastroClienteForm.cpf || null,
-        rg: cadastroClienteForm.rg || null,
-        profissao: cadastroClienteForm.profissao || null,
-        endereco: cadastroClienteForm.endereco || null
-      });
+      const payloadCliente = montarPayloadCliente(cadastroClienteForm);
+      await cadastrarCliente(payloadCliente);
       setCadastroClienteForm(cadastroClienteInicial);
-      setLoginForm({ login: cadastroClienteForm.email, senha: "" });
+      setLoginForm({ login: payloadCliente.email, senha: "" });
       mudarAba("login");
       setMensagem("Cadastro realizado com sucesso. Faca o login para continuar.");
     } catch (error) {
@@ -103,23 +121,17 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
     event.preventDefault();
     setErro("");
     setMensagem("");
+
+    const erroValidacao = validarFormularioAgente(cadastroAgenteForm);
+    if (erroValidacao) {
+      setErro(erroValidacao);
+      return;
+    }
+
     setCarregando(true);
 
     try {
-      const payloadAgente = {
-        login: cadastroAgenteForm.login,
-        senha: cadastroAgenteForm.senha,
-        nomeFantasia: cadastroAgenteForm.nomeFantasia,
-        cnpj: cadastroAgenteForm.cnpj || null,
-        tipo: cadastroAgenteForm.tipo
-      };
-      if (cadastroAgenteForm.tipo === "EMPRESA") {
-        payloadAgente.ramoAtividade = cadastroAgenteForm.ramoAtividade || null;
-        payloadAgente.setor = cadastroAgenteForm.setor || null;
-      } else if (cadastroAgenteForm.tipo === "BANCO") {
-        payloadAgente.codigo = cadastroAgenteForm.codigo || null;
-        payloadAgente.taxaJuros = cadastroAgenteForm.taxaJuros ? parseFloat(cadastroAgenteForm.taxaJuros) : null;
-      }
+      const payloadAgente = montarPayloadAgente(cadastroAgenteForm);
       await cadastrarAgente(payloadAgente);
       setCadastroAgenteForm(cadastroAgenteInicial);
       setLoginForm({ login: cadastroAgenteForm.login, senha: "" });
@@ -230,7 +242,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                     data-1p-ignore="true"
                     placeholder="seu@email.com"
                     value={loginForm.login}
-                    onChange={atualizarCampo(setLoginForm)}
+                    onChange={atualizarLoginForm}
                     required
                   />
                 </div>
@@ -248,7 +260,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                     data-1p-ignore="true"
                     placeholder="••••••••"
                     value={loginForm.senha}
-                    onChange={atualizarCampo(setLoginForm)}
+                    onChange={atualizarLoginForm}
                     required
                   />
                 </div>
@@ -299,7 +311,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         type="text"
                         placeholder="Seu nome completo"
                         value={cadastroClienteForm.nome}
-                        onChange={atualizarCampo(setCadastroClienteForm)}
+                        onChange={atualizarCadastroCliente}
                         required
                       />
                     </div>
@@ -313,7 +325,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         placeholder="seu@email.com"
                         autoCapitalize="none"
                         value={cadastroClienteForm.email}
-                        onChange={atualizarCampo(setCadastroClienteForm)}
+                        onChange={atualizarCadastroCliente}
                         required
                       />
                     </div>
@@ -327,7 +339,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         value={cadastroClienteForm.senha}
-                        onChange={atualizarCampo(setCadastroClienteForm)}
+                        onChange={atualizarCadastroCliente}
                         required
                       />
                     </div>
@@ -335,26 +347,30 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                       <div className="auth-field">
                         <label className="auth-field-label" htmlFor="cad-cpf">CPF</label>
                         <input
-                          id="cad-cpf"
-                          className="auth-field-input"
-                          name="cpf"
-                          type="text"
-                          placeholder="000.000.000-00"
-                          value={cadastroClienteForm.cpf}
-                          onChange={atualizarCampo(setCadastroClienteForm)}
-                        />
+                        id="cad-cpf"
+                        className="auth-field-input"
+                        name="cpf"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={CPF_TAMANHO}
+                        placeholder="000.000.000-00"
+                        value={cadastroClienteForm.cpf}
+                        onChange={atualizarCadastroCliente}
+                      />
                       </div>
                       <div className="auth-field">
                         <label className="auth-field-label" htmlFor="cad-rg">RG</label>
                         <input
-                          id="cad-rg"
-                          className="auth-field-input"
-                          name="rg"
-                          type="text"
-                          placeholder="00.000.000-0"
-                          value={cadastroClienteForm.rg}
-                          onChange={atualizarCampo(setCadastroClienteForm)}
-                        />
+                        id="cad-rg"
+                        className="auth-field-input"
+                        name="rg"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={RG_TAMANHO}
+                        placeholder="00.000.000-0"
+                        value={cadastroClienteForm.rg}
+                        onChange={atualizarCadastroCliente}
+                      />
                       </div>
                     </div>
                     <div className="auth-field">
@@ -366,7 +382,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         type="text"
                         placeholder="Ex: Engenheiro, Medico..."
                         value={cadastroClienteForm.profissao}
-                        onChange={atualizarCampo(setCadastroClienteForm)}
+                        onChange={atualizarCadastroCliente}
                       />
                     </div>
                     <div className="auth-field">
@@ -378,7 +394,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         type="text"
                         placeholder="Rua, numero, bairro, cidade"
                         value={cadastroClienteForm.endereco}
-                        onChange={atualizarCampo(setCadastroClienteForm)}
+                        onChange={atualizarCadastroCliente}
                       />
                     </div>
                   </div>
@@ -408,7 +424,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         placeholder="agente@empresa.com"
                         autoCapitalize="none"
                         value={cadastroAgenteForm.login}
-                        onChange={atualizarCampo(setCadastroAgenteForm)}
+                        onChange={atualizarCadastroAgente}
                         required
                       />
                     </div>
@@ -422,7 +438,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         placeholder="••••••••"
                         autoComplete="new-password"
                         value={cadastroAgenteForm.senha}
-                        onChange={atualizarCampo(setCadastroAgenteForm)}
+                        onChange={atualizarCadastroAgente}
                         required
                       />
                     </div>
@@ -435,21 +451,23 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                         type="text"
                         placeholder="Nome da empresa ou banco"
                         value={cadastroAgenteForm.nomeFantasia}
-                        onChange={atualizarCampo(setCadastroAgenteForm)}
+                        onChange={atualizarCadastroAgente}
                       />
                     </div>
                     <div className="auth-field-row">
                       <div className="auth-field">
                         <label className="auth-field-label" htmlFor="ag-cnpj">CNPJ</label>
                         <input
-                          id="ag-cnpj"
-                          className="auth-field-input"
-                          name="cnpj"
-                          type="text"
-                          placeholder="00.000.000/0000-00"
-                          value={cadastroAgenteForm.cnpj}
-                          onChange={atualizarCampo(setCadastroAgenteForm)}
-                        />
+                        id="ag-cnpj"
+                        className="auth-field-input"
+                        name="cnpj"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={CNPJ_TAMANHO}
+                        placeholder="00.000.000/0000-00"
+                        value={cadastroAgenteForm.cnpj}
+                        onChange={atualizarCadastroAgente}
+                      />
                       </div>
                       <div className="auth-field">
                         <label className="auth-field-label" htmlFor="ag-tipo">Tipo *</label>
@@ -458,7 +476,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                           className="auth-field-input auth-field-select"
                           name="tipo"
                           value={cadastroAgenteForm.tipo}
-                          onChange={atualizarCampo(setCadastroAgenteForm)}
+                          onChange={atualizarCadastroAgente}
                           required
                         >
                           <option value="EMPRESA">Empresa</option>
@@ -478,7 +496,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                             type="text"
                             placeholder="Ex: Locacao de veiculos"
                             value={cadastroAgenteForm.ramoAtividade}
-                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                            onChange={atualizarCadastroAgente}
                           />
                         </div>
                         <div className="auth-field">
@@ -490,7 +508,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                             type="text"
                             placeholder="Ex: Transporte"
                             value={cadastroAgenteForm.setor}
-                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                            onChange={atualizarCadastroAgente}
                           />
                         </div>
                       </div>
@@ -507,7 +525,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                             type="text"
                             placeholder="Ex: 001"
                             value={cadastroAgenteForm.codigo}
-                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                            onChange={atualizarCadastroAgente}
                           />
                         </div>
                         <div className="auth-field">
@@ -521,7 +539,7 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
                             step="0.01"
                             placeholder="Ex: 1.5"
                             value={cadastroAgenteForm.taxaJuros}
-                            onChange={atualizarCampo(setCadastroAgenteForm)}
+                            onChange={atualizarCadastroAgente}
                           />
                         </div>
                       </div>

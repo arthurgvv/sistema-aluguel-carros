@@ -5,6 +5,15 @@ import {
   cadastrarCliente,
   salvarMensagemTemporaria
 } from "../services/clientesApi";
+import {
+  CPF_TAMANHO,
+  RG_TAMANHO,
+  montarPayloadCliente,
+  sanitizarCampoCliente,
+  sanitizarNumeros,
+  sanitizarNomePessoa,
+  validarFormularioCliente
+} from "../utils/cadastroValidacao";
 
 const formularioInicial = {
   nome: "",
@@ -34,11 +43,11 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
       try {
         const cliente = await buscarClientePorId(clienteId);
         setFormulario({
-          nome: cliente.nome || "",
+          nome: sanitizarNomePessoa(cliente.nome || ""),
           email: cliente.email || cliente.login || "",
           senha: "",
-          cpf: cliente.cpf || "",
-          rg: cliente.rg || "",
+          cpf: sanitizarNumeros(cliente.cpf || "", CPF_TAMANHO),
+          rg: sanitizarNumeros(cliente.rg || "", RG_TAMANHO),
           profissao: cliente.profissao || "",
           endereco: cliente.endereco || ""
         });
@@ -56,25 +65,24 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
     const { name, value } = event.target;
     setFormulario((atual) => ({
       ...atual,
-      [name]: value
+      [name]: sanitizarCampoCliente(name, value)
     }));
   }
 
   async function salvar(event) {
     event.preventDefault();
     setErro("");
+
+    const erroValidacao = validarFormularioCliente(formulario);
+    if (erroValidacao) {
+      setErro(erroValidacao);
+      return;
+    }
+
     setSalvando(true);
 
     try {
-      const payload = {
-        nome: formulario.nome,
-        email: formulario.email,
-        senha: formulario.senha,
-        cpf: formulario.cpf || null,
-        rg: formulario.rg || null,
-        profissao: formulario.profissao || null,
-        endereco: formulario.endereco || null
-      };
+      const payload = montarPayloadCliente(formulario);
 
       if (modo === "editar") {
         await atualizarCliente(clienteId, payload);
@@ -154,6 +162,8 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
                   name="cpf"
                   value={formulario.cpf}
                   onChange={atualizarCampo}
+                  inputMode="numeric"
+                  maxLength={CPF_TAMANHO}
                   placeholder="000.000.000-00"
                 />
               </label>
@@ -163,6 +173,8 @@ export default function ClienteFormPage({ modo, clienteId, onCancelar, onSalvarS
                   name="rg"
                   value={formulario.rg}
                   onChange={atualizarCampo}
+                  inputMode="numeric"
+                  maxLength={RG_TAMANHO}
                   placeholder="00.000.000-0"
                 />
               </label>
