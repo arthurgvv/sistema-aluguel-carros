@@ -27,7 +27,7 @@ function lerArquivoBase64(arquivo) {
   });
 }
 
-export default function AutomoveisPage({ usuarioLogado }) {
+export default function AutomoveisPage({ usuarioLogado, onSelecionarAutomovel }) {
   const [automoveis, setAutomoveis] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -240,75 +240,83 @@ export default function AutomoveisPage({ usuarioLogado }) {
       )}
 
       {!carregando && automoveis.length > 0 && (
-        <div className="table-wrapper">
-          <table className="clients-table">
-            <thead>
-              <tr>
-                <th>Foto</th>
-                <th>Marca / Modelo</th>
-                <th>Placa</th>
-                <th>Ano</th>
-                <th>Status</th>
-                {isAgente && <th>Acoes</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {automoveis.map((auto) => (
-                <tr key={auto.id}>
-                  <td
-                    style={{ width: "72px", cursor: isAgente ? "pointer" : "default" }}
-                    onClick={isAgente ? () => inputsImagem.current[auto.id]?.click() : undefined}
-                    title={isAgente ? (uploadando === auto.id ? "Enviando..." : "Clique para trocar a foto") : undefined}
+        <div className="cars-grid">
+          {automoveis.map((auto) => (
+            <div
+              key={auto.id}
+              className={`car-card${onSelecionarAutomovel && auto.isDisponivel ? " car-card--selectable" : ""}`}
+              onClick={onSelecionarAutomovel && auto.isDisponivel ? () => onSelecionarAutomovel(auto) : undefined}
+            >
+              {isAgente && (
+                <input
+                  ref={el => { inputsImagem.current[auto.id] = el; }}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => trocarImagem(auto, e)}
+                />
+              )}
+
+              <div className="car-card-photo">
+                {auto.imagemBase64 ? (
+                  <img src={auto.imagemBase64} alt={`${auto.marca} ${auto.modelo}`} />
+                ) : (
+                  <div className="car-card-photo-placeholder">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2" />
+                      <circle cx="12" cy="13" r="3" />
+                    </svg>
+                  </div>
+                )}
+
+                <div className="car-card-status">
+                  <span className={`status-badge ${auto.isDisponivel ? "status-badge--disponivel" : "status-badge--indisponivel"}`}>
+                    {auto.isDisponivel ? "Disponivel" : "Indisponivel"}
+                  </span>
+                </div>
+
+                {isAgente && (
+                  <div
+                    className="car-card-upload-overlay"
+                    onClick={() => inputsImagem.current[auto.id]?.click()}
+                    title={uploadando === auto.id ? "Enviando..." : "Trocar foto"}
                   >
-                    {isAgente && (
-                      <input
-                        ref={el => { inputsImagem.current[auto.id] = el; }}
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={(e) => trocarImagem(auto, e)}
-                      />
-                    )}
-                    {auto.imagemBase64 ? (
-                      <img src={auto.imagemBase64} alt={`${auto.marca} ${auto.modelo}`} className="car-thumb" />
-                    ) : (
-                      <div className="car-thumb-placeholder" />
-                    )}
-                  </td>
-                  <td>
-                    <strong>{auto.marca}</strong> {auto.modelo}
-                  </td>
-                  <td>{auto.placa}</td>
-                  <td>{auto.ano}</td>
-                  <td>
-                    <span className={`status-badge ${auto.isDisponivel ? "status-badge--disponivel" : "status-badge--indisponivel"}`}>
-                      {auto.isDisponivel ? "Disponivel" : "Indisponivel"}
-                    </span>
-                  </td>
-                  {isAgente && (
-                    <td>
-                      <div className="row-actions">
-                        <button
-                          type="button"
-                          className={auto.isDisponivel ? "ghost-button" : "secondary-button"}
-                          onClick={() => alternarDisponibilidade(auto)}
-                        >
-                          {auto.isDisponivel ? "Tornar indisponivel" : "Tornar disponivel"}
-                        </button>
-                        <button
-                          type="button"
-                          className="danger-button"
-                          onClick={() => excluir(auto.id)}
-                        >
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <span>{uploadando === auto.id ? "Enviando..." : "Trocar foto"}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="car-card-body">
+                <div className="car-card-title">
+                  <strong>{auto.marca}</strong> {auto.modelo}
+                </div>
+                <div className="car-card-meta">
+                  <span>{auto.placa}</span>
+                  <span className="car-card-meta-sep">·</span>
+                  <span>{auto.ano}</span>
+                </div>
+              </div>
+
+              {isAgente && (
+                <div className="car-card-actions">
+                  <button
+                    type="button"
+                    className={auto.isDisponivel ? "ghost-button" : "secondary-button"}
+                    onClick={() => alternarDisponibilidade(auto)}
+                  >
+                    {auto.isDisponivel ? "Indisponivel" : "Disponivel"}
+                  </button>
+                  <button
+                    type="button"
+                    className="danger-button"
+                    onClick={() => excluir(auto.id)}
+                  >
+                    Excluir
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </section>

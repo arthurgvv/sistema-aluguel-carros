@@ -56,6 +56,7 @@ export default function App() {
   const [usuarioLogado, setUsuarioLogado] = useState(() => lerUsuarioLogado());
   const [rotaAtual, setRotaAtual] = useState(() => lerRota());
   const [pedidoCredito, setPedidoCredito] = useState(null);
+  const [automovelSelecionado, setAutomovelSelecionado] = useState(null);
 
   useEffect(() => {
     if (!window.location.hash) {
@@ -140,6 +141,11 @@ export default function App() {
     navegar("#/pedidos/credito");
   }
 
+  function abrirNovoPedidoComAutomovel(automovel) {
+    setAutomovelSelecionado(automovel);
+    navegar("#/pedidos/novo");
+  }
+
   const isAgente = usuarioLogado?.tipoUsuario === "AGENTE";
   const isBanco  = isAgente && usuarioLogado?.tipo === "BANCO";
   const isEmpresa = isAgente && usuarioLogado?.tipo === "EMPRESA";
@@ -191,7 +197,10 @@ export default function App() {
 
       {/* Ambos: frota */}
       {rotaAtual.nome === "automoveis" && (
-        <AutomoveisPage usuarioLogado={usuarioLogado} />
+        <AutomoveisPage
+          usuarioLogado={usuarioLogado}
+          onSelecionarAutomovel={!isAgente ? abrirNovoPedidoComAutomovel : null}
+        />
       )}
 
       {/* Ambos: pedidos */}
@@ -208,8 +217,9 @@ export default function App() {
       {rotaAtual.nome === "novo-pedido" && !isAgente && (
         <NovoPedidoPage
           usuarioLogado={usuarioLogado}
-          onCancelar={() => navegar("#/pedidos")}
-          onSucesso={() => navegar("#/pedidos")}
+          automovelPreSelecionado={automovelSelecionado}
+          onCancelar={() => { setAutomovelSelecionado(null); navegar("#/pedidos"); }}
+          onSucesso={() => { setAutomovelSelecionado(null); navegar("#/pedidos"); }}
         />
       )}
       {rotaAtual.nome === "editar-pedido" && !isAgente && (

@@ -7,8 +7,11 @@ const formularioInicial = {
   automovelId: ""
 };
 
-export default function NovoPedidoPage({ usuarioLogado, onCancelar, onSucesso }) {
-  const [formulario, setFormulario] = useState(formularioInicial);
+export default function NovoPedidoPage({ usuarioLogado, automovelPreSelecionado, onCancelar, onSucesso }) {
+  const [formulario, setFormulario] = useState({
+    ...formularioInicial,
+    automovelId: automovelPreSelecionado?.id ? String(automovelPreSelecionado.id) : ""
+  });
   const [automoveis, setAutomoveis] = useState([]);
   const [carregandoAutos, setCarregandoAutos] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -88,7 +91,12 @@ export default function NovoPedidoPage({ usuarioLogado, onCancelar, onSucesso })
         <div className="form-grid">
           <label>
             Automovel *
-            {carregandoAutos ? (
+            {automovelPreSelecionado ? (
+              <input
+                disabled
+                value={`${automovelPreSelecionado.marca} ${automovelPreSelecionado.modelo} (${automovelPreSelecionado.ano}) — Placa: ${automovelPreSelecionado.placa}`}
+              />
+            ) : carregandoAutos ? (
               <input disabled value="Carregando automoveis disponíveis..." />
             ) : automoveis.length === 0 ? (
               <input disabled value="Nenhum automovel disponivel no momento" />
