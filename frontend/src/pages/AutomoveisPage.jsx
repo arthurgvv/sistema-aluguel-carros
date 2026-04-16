@@ -271,16 +271,7 @@ export default function AutomoveisPage({
               )}
 
               <div className="car-card-photo">
-                {fotoSrc ? (
-                  <img src={fotoSrc} alt={`${auto.marca} ${auto.modelo}`} />
-                ) : (
-                  <div className="car-card-photo-placeholder">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2" />
-                      <circle cx="12" cy="13" r="3" />
-                    </svg>
-                  </div>
-                )}
+                <img src={fotoSrc ?? "/getimage.png"} alt={`${auto.marca} ${auto.modelo}`} />
 
                 <div className="car-card-status">
                   <span className={`status-badge ${auto.isDisponivel ? "status-badge--disponivel" : "status-badge--indisponivel"}`}>

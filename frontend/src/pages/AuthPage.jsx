@@ -146,47 +146,36 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
 
   return (
     <div className="auth-split-layout">
-      {/* Left panel */}
+      {/* Left panel — foto + marca */}
       <div className="auth-split-left">
-        {onVoltarInicio && (
-          <button
-            type="button"
-            className="auth-back-icon"
-            onClick={onVoltarInicio}
-            aria-label="Voltar ao site"
-            title="Voltar ao site"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        )}
-        <div className="auth-split-left-content auth-split-left-content--logo">
-          <img src="/bycarspng.png" alt="byCars" className="auth-brand-logo" />
-          <p className="auth-brand-slogan">
-            "Melhor Preço
-            <br />
-            Melhor Investimento"
-          </p>
+        <img src="/bg-car3.jpg" alt="" className="auth-left-img" aria-hidden="true" />
+        <div className="auth-left-top">
+          {onVoltarInicio && (
+            <button type="button" className="auth-back-icon" onClick={onVoltarInicio} title="Voltar ao site">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18L9 12L15 6" />
+              </svg>
+            </button>
+          )}
+          <img src="/bycarspng.png" alt="byCars" className="auth-left-logo" />
+        </div>
+        <div className="auth-left-bottom">
+          <p className="auth-left-eyebrow">A experiência byCars</p>
+          <h2 className="auth-left-tagline">Redefinindo o padrão<br />da mobilidade.</h2>
         </div>
       </div>
 
-      {/* Right panel */}
+      {/* Right panel — formulário */}
       <div className="auth-split-right">
         <div className="auth-form-card">
           <div className="auth-form-header">
+            <p className="auth-form-eyebrow">{abaAtiva === "login" ? "Acesso privado" : "Novo cadastro"}</p>
             <h2 className="auth-form-title">
-              {abaAtiva === "login" ? "Entrar na conta" : "Criar conta"}
+              {abaAtiva === "login" ? "Bem-vindo de volta" : "Criar conta"}
             </h2>
             <p className="auth-form-subtitle">
               {abaAtiva === "login"
-                ? "Informe suas credenciais para acessar o sistema."
+                ? "Informe suas credenciais para acessar sua frota."
                 : "Preencha os dados para criar seu acesso."}
             </p>
           </div>
