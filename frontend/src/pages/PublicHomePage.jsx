@@ -227,12 +227,7 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
                     >
                       {/* Foto */}
                       <div className="lp-vc-photo">
-                        <img
-                          src={foto ?? "/getimage.png"}
-                          alt={`${auto.marca} ${auto.modelo}`}
-                          loading="lazy"
-                          style={auto.id === 9 ? { transform: "scale(0.75)", transformOrigin: "center" } : undefined}
-                        />
+                        <img src={foto ?? "/getimage.png"} alt={`${auto.marca} ${auto.modelo}`} loading="lazy" />
                       </div>
 
                       {/* Info */}
