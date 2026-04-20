@@ -1,166 +1,269 @@
 import { useEffect, useState } from "react";
 import { criarPedido, listarAutomoveisDisponiveis } from "../services/clientesApi";
+import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
+import DatePicker from "../components/DatePicker";
 
-const formularioInicial = {
-  dataInicio: "",
-  dataFim: "",
-  automovelId: ""
+/* ── Mapeamentos de atributos ──────────────────────────────── */
+const CATEGORIAS = {
+  golf: "Hatchback", polo: "Hatchback", clio: "Hatchback", yaris: "Hatchback",
+  "208": "Hatchback", "3008": "SUV", tiguan: "SUV", q5: "SUV", rav4: "SUV",
+  corolla: "Sedan", a4: "Sedan", "c-class": "Sedan", "3 series": "Sedan",
+  passat: "Sedan", octavia: "Sedan", sportage: "SUV", xc60: "SUV",
+  discovery: "SUV", x3: "SUV", "hr-v": "SUV", territory: "SUV", gla: "SUV",
+  hilux: "Picape",
+};
+const TRANSMISSAO = {
+  clio: "Manual", "208": "Manual", yaris: "Manual", passat: "Manual", octavia: "Manual",
+};
+const COMBUSTIVEL = {
+  corolla: "Híbrido", rav4: "Híbrido", xc60: "Híbrido",
+  golf: "Flex", polo: "Flex", clio: "Flex", yaris: "Flex", "208": "Flex",
+  tiguan: "Flex", passat: "Flex", territory: "Flex", "hr-v": "Flex", hilux: "Flex",
+  sportage: "Gasolina", octavia: "Gasolina", a4: "Gasolina", "c-class": "Gasolina",
+  "3 series": "Gasolina", q5: "Gasolina", discovery: "Gasolina", x3: "Gasolina", gla: "Gasolina",
 };
 
+function norm(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+const getCategoria   = m => CATEGORIAS[norm(m)]   ?? "Automóvel";
+const getTransmissao = m => TRANSMISSAO[norm(m)]  ?? "Automático";
+const getCombustivel = m => COMBUSTIVEL[norm(m)]  ?? "Flex";
+
+function formatarMoeda(v) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+}
+
+function calcularDias(inicio, fim) {
+  if (!inicio || !fim) return 0;
+  const d = Math.ceil((new Date(fim) - new Date(inicio)) / 86_400_000);
+  return d > 0 ? d : 0;
+}
+
+/* ── Componente ────────────────────────────────────────────── */
 export default function NovoPedidoPage({ usuarioLogado, automovelPreSelecionado, onCancelar, onSucesso }) {
-  const [formulario, setFormulario] = useState({
-    ...formularioInicial,
-    automovelId: automovelPreSelecionado?.id ? String(automovelPreSelecionado.id) : ""
-  });
-  const [automoveis, setAutomoveis] = useState([]);
-  const [carregandoAutos, setCarregandoAutos] = useState(true);
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState("");
+  const [step,            setStep]            = useState(automovelPreSelecionado ? 2 : 1);
+  const [automoveis,      setAutomoveis]      = useState([]);
+  const [carregando,      setCarregando]      = useState(true);
+  const [autoSelecionado, setAutoSelecionado] = useState(automovelPreSelecionado || null);
+  const [dataInicio,      setDataInicio]      = useState("");
+  const [dataFim,         setDataFim]         = useState("");
+  const [salvando,        setSalvando]        = useState(false);
+  const [erro,            setErro]            = useState("");
+
+  const hoje = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
-    async function carregarAutomoveis() {
-      try {
-        const lista = await listarAutomoveisDisponiveis();
-        setAutomoveis(lista || []);
-      } catch (error) {
-        setErro(error.message || "Nao foi possivel carregar os automoveis disponíveis.");
-      } finally {
-        setCarregandoAutos(false);
-      }
-    }
-    carregarAutomoveis();
+    listarAutomoveisDisponiveis()
+      .then(lista => setAutomoveis(lista || []))
+      .catch(e => setErro(e.message || "Não foi possível carregar os veículos."))
+      .finally(() => setCarregando(false));
   }, []);
 
-  function atualizarCampo(event) {
-    const { name, value } = event.target;
-    setFormulario((atual) => ({ ...atual, [name]: value }));
+  function selecionarAuto(auto) {
+    setAutoSelecionado(auto);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function calcularValorEstimado() {
-    if (!formulario.dataInicio || !formulario.dataFim) return null;
-    const inicio = new Date(formulario.dataInicio);
-    const fim = new Date(formulario.dataFim);
-    const dias = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
-    if (dias <= 0) return null;
-    return (dias * 100).toFixed(2);
-  }
-
-  async function salvar(event) {
-    event.preventDefault();
-    setErro("");
-
-    if (!formulario.automovelId) {
-      setErro("Selecione um automovel.");
-      return;
-    }
-
-    setSalvando(true);
+  async function confirmar() {
+    if (!dataInicio) { setErro("Informe a data de início."); return; }
+    if (!dataFim)    { setErro("Informe a data de devolução."); return; }
+    if (dataInicio >= dataFim) { setErro("A data de devolução deve ser após o início."); return; }
+    setErro(""); setSalvando(true);
     try {
       await criarPedido({
-        cliente: { id: usuarioLogado.id },
-        automovel: { id: parseInt(formulario.automovelId, 10) },
-        dataInicio: formulario.dataInicio,
-        dataFim: formulario.dataFim
+        cliente:    { id: usuarioLogado.id },
+        automovel:  { id: autoSelecionado.id },
+        dataInicio,
+        dataFim,
       });
       onSucesso();
-    } catch (error) {
-      setErro(error.message || "Nao foi possivel criar o pedido.");
+    } catch (e) {
+      setErro(e.message || "Não foi possível criar o pedido.");
     } finally {
       setSalvando(false);
     }
   }
 
-  const valorEstimado = calcularValorEstimado();
+  const dias           = calcularDias(dataInicio, dataFim);
+  const valorEstimado  = dias > 0 ? dias * 100 : null;
 
-  return (
-    <section className="page-card form-page">
-      <header className="split-header">
-        <div>
-          <p className="eyebrow">Novo pedido de aluguel</p>
-          <h1>Solicitar aluguel</h1>
-          <p className="page-subtitle">Escolha o veiculo e o periodo desejado para solicitar o aluguel.</p>
-        </div>
-        <button type="button" className="secondary-button" onClick={onCancelar}>
-          Voltar
-        </button>
-      </header>
-
-      {erro && <p className="feedback error">{erro}</p>}
-
-      <form className="form-card" onSubmit={salvar}>
-        <div className="form-grid">
-          <label>
-            Automovel *
-            {automovelPreSelecionado ? (
-              <input
-                disabled
-                value={`${automovelPreSelecionado.marca} ${automovelPreSelecionado.modelo} (${automovelPreSelecionado.ano}) — Placa: ${automovelPreSelecionado.placa}`}
-              />
-            ) : carregandoAutos ? (
-              <input disabled value="Carregando automoveis disponíveis..." />
-            ) : automoveis.length === 0 ? (
-              <input disabled value="Nenhum automovel disponivel no momento" />
-            ) : (
-              <select
-                name="automovelId"
-                className="form-select"
-                value={formulario.automovelId}
-                onChange={atualizarCampo}
-                required
-              >
-                <option value="">Selecione um automovel...</option>
-                {automoveis.map((auto) => (
-                  <option key={auto.id} value={auto.id}>
-                    {auto.marca} {auto.modelo} ({auto.ano}) — Placa: {auto.placa}
-                  </option>
-                ))}
-              </select>
-            )}
-          </label>
-
-          <div className="form-grid form-grid--2col">
-            <label>
-              Data de inicio *
-              <input
-                name="dataInicio"
-                type="date"
-                value={formulario.dataInicio}
-                onChange={atualizarCampo}
-                min={new Date().toISOString().split("T")[0]}
-                required
-              />
-            </label>
-            <label>
-              Data de devolucao *
-              <input
-                name="dataFim"
-                type="date"
-                value={formulario.dataFim}
-                onChange={atualizarCampo}
-                min={formulario.dataInicio || new Date().toISOString().split("T")[0]}
-                required
-              />
-            </label>
+  /* ── STEP 1: Seleção de veículo ──────────────────────────── */
+  if (step === 1) {
+    return (
+      <section className="page-card np-step1">
+        {/* Header */}
+        <div className="np-hero">
+          <div className="np-watermark">FROTA</div>
+          <div className="np-hero-left">
+            <p className="eyebrow">Novo pedido — Etapa 1 de 2</p>
+            <h1 className="np-title">ESCOLHA SEU VEÍCULO</h1>
           </div>
-
-          {valorEstimado && (
-            <div className="valor-estimado">
-              <span className="valor-estimado-label">Valor estimado:</span>
-              <span className="valor-estimado-valor">R$ {valorEstimado}</span>
-              <span className="valor-estimado-obs">(R$ 100,00 por dia)</span>
-            </div>
-          )}
-        </div>
-
-        <div className="form-actions">
           <button type="button" className="ghost-button" onClick={onCancelar}>
             Cancelar
           </button>
-          <button type="submit" className="primary-button" disabled={salvando || automoveis.length === 0}>
-            {salvando ? "Enviando pedido..." : "Enviar pedido"}
-          </button>
         </div>
-      </form>
+
+        {erro && <p className="feedback error">{erro}</p>}
+
+        {carregando && (
+          <div className="empty-state"><h2>Carregando veículos...</h2></div>
+        )}
+
+        {!carregando && automoveis.length === 0 && (
+          <div className="empty-state">
+            <h2>Nenhum veículo disponível</h2>
+            <p>No momento não há veículos disponíveis para aluguel.</p>
+          </div>
+        )}
+
+        {!carregando && automoveis.length > 0 && (
+          <div className="np-grid">
+            {automoveis.map((auto, idx) => {
+              const foto  = srcFotoAutomovel(auto);
+              const trans = getTransmissao(auto.modelo);
+              const comb  = getCombustivel(auto.modelo);
+              const cat   = getCategoria(auto.modelo);
+              return (
+                <button
+                  key={auto.id}
+                  type="button"
+                  className="np-car-card"
+                  onClick={() => selecionarAuto(auto)}
+                >
+                  <div className="np-car-photo">
+                    <img src={foto ?? "/getimage.png"} alt={`${auto.marca} ${auto.modelo}`} loading="lazy" />
+                    <span className="np-car-num">{String(idx + 1).padStart(2, "0")}</span>
+                  </div>
+                  <div className="np-car-body">
+                    <div className="np-car-name">{auto.marca} {auto.modelo}</div>
+                    <div className="np-car-sub">{cat} · {auto.ano}</div>
+                    <div className="np-car-specs">
+                      <span>{trans}</span>
+                      <span>5 lugares</span>
+                      <span>{comb}</span>
+                    </div>
+                    <div className="np-car-price">
+                      R$ 100<span>/dia</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  /* ── STEP 2: Datas + confirmação ─────────────────────────── */
+  const foto        = srcFotoAutomovel(autoSelecionado);
+  const nomeVeic    = autoSelecionado
+    ? `${autoSelecionado.marca} ${autoSelecionado.modelo}`
+    : "";
+  const cat         = getCategoria(autoSelecionado?.modelo);
+  const trans       = getTransmissao(autoSelecionado?.modelo);
+  const comb        = getCombustivel(autoSelecionado?.modelo);
+
+  return (
+    <section className="page-card np-step2">
+      <div className="np-booking">
+
+        {/* Painel esquerdo — foto do carro */}
+        <div className="np-booking-photo">
+          <img src={foto ?? "/getimage.png"} alt={nomeVeic} />
+          <div className="np-booking-overlay">
+            <div className="np-booking-badge">{cat}</div>
+            <div className="np-booking-carname">{nomeVeic.toUpperCase()}</div>
+            <div className="np-booking-car-specs">
+              <span>{trans}</span>
+              <span>·</span>
+              <span>5 lugares</span>
+              <span>·</span>
+              <span>{comb}</span>
+            </div>
+          </div>
+          {/* Voltar */}
+          {!automovelPreSelecionado && (
+            <button
+              type="button"
+              className="np-back-btn"
+              onClick={() => { setStep(1); setErro(""); }}
+            >
+              ← Trocar veículo
+            </button>
+          )}
+        </div>
+
+        {/* Painel direito — formulário */}
+        <div className="np-booking-form">
+          <div className="np-booking-form-inner">
+            <p className="eyebrow">Novo pedido — Etapa 2 de 2</p>
+            <h2 className="np-booking-title">PERÍODO DE ALUGUEL</h2>
+
+            {erro && <p className="feedback error" style={{ marginBottom: 8 }}>{erro}</p>}
+
+            <div className="np-date-row">
+              <div className="np-date-field">
+                <span className="np-field-label">Data de retirada</span>
+                <DatePicker
+                  value={dataInicio}
+                  min={hoje}
+                  placeholder="Selecione a data"
+                  onChange={v => { setDataInicio(v); if (dataFim && v >= dataFim) setDataFim(""); }}
+                />
+              </div>
+              <div className="np-date-field">
+                <span className="np-field-label">Data de devolução</span>
+                <DatePicker
+                  value={dataFim}
+                  min={dataInicio || hoje}
+                  placeholder="Selecione a data"
+                  onChange={setDataFim}
+                />
+              </div>
+            </div>
+
+            {/* Resumo */}
+            {dias > 0 && (
+              <div className="np-summary">
+                <div className="np-summary-row">
+                  <span className="np-summary-label">Duração</span>
+                  <span className="np-summary-val">{dias} dia{dias > 1 ? "s" : ""}</span>
+                </div>
+                <div className="np-summary-row">
+                  <span className="np-summary-label">Diária</span>
+                  <span className="np-summary-val">R$ 100,00</span>
+                </div>
+                <div className="np-summary-divider" />
+                <div className="np-summary-row np-summary-row--total">
+                  <span className="np-summary-label">Total estimado</span>
+                  <span className="np-summary-val">{formatarMoeda(valorEstimado)}</span>
+                </div>
+                <p className="np-summary-obs">
+                  * Valor sujeito a confirmação após aprovação do pedido.
+                </p>
+              </div>
+            )}
+
+            <div className="np-booking-actions">
+              <button type="button" className="ghost-button" onClick={onCancelar}>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="np-confirm-btn"
+                disabled={salvando || !dataInicio || !dataFim || dias <= 0}
+                onClick={confirmar}
+              >
+                {salvando ? "Enviando..." : "Confirmar Pedido"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </section>
   );
 }

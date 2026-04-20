@@ -1,43 +1,108 @@
 import { useState, useRef } from "react";
 import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
+import LocationPicker from "../components/LocationPicker";
+import DatePicker from "../components/DatePicker";
 
-const POPULAR_LOCATIONS = [
-  "Rio de Janeiro", "São Paulo", "Belo Horizonte", "Curitiba",
-  "Salvador", "Fortaleza", "Manaus", "Porto Alegre",
-  "Recife", "Brasília", "Florianópolis", "Natal",
+const CAPITAIS = [
+  "Rio Branco", "Maceió", "Macapá", "Manaus", "Salvador", "Fortaleza",
+  "Brasília", "Vitória", "Goiânia", "São Luís", "Cuiabá", "Campo Grande",
+  "Belo Horizonte", "Belém", "João Pessoa", "Curitiba", "Recife", "Teresina",
+  "Rio de Janeiro", "Natal", "Porto Alegre", "Porto Velho", "Boa Vista",
+  "Florianópolis", "São Paulo", "Aracaju", "Palmas",
+].sort(() => Math.random() - 0.5);
+
+const PARTNERS = [
+  { src: "/logo-brand-1.png", alt: "Parceiro 1" },
+  { src: "/logo-brand-2.png", alt: "Parceiro 2" },
+  { src: "/logo-brand-3.png", alt: "BMW" },
+  { src: "/logo-brand-4.png", alt: "Volkswagen" },
+  { src: "/logo-brand-5.svg", alt: "Fiat" },
+  { src: "/logo-brand-6.svg", alt: "Mercedes-Benz" },
 ];
-
-const PARTNERS = ["AutoFácil", "RentMax", "CarTech", "AutoPlus", "DriveNow", "FleetPro"];
 
 const CATEGORIAS = {
   golf: "Hatchback", polo: "Hatchback", clio: "Hatchback", yaris: "Hatchback",
-  "208": "Hatchback", "3008": "SUV", tiguan: "SUV", "q5": "SUV", rav4: "SUV",
+  "208": "Hatchback", "3008": "SUV", tiguan: "SUV", q5: "SUV", rav4: "SUV",
   corolla: "Sedan", a4: "Sedan", "c-class": "Sedan", "3 series": "Sedan",
   passat: "Sedan", octavia: "Sedan",
+  sportage: "SUV", xc60: "SUV", discovery: "SUV", x3: "SUV", "hr-v": "SUV",
+  territory: "SUV", gla: "SUV", hilux: "Picape",
 };
 
-function getCategoria(modelo) {
-  const m = String(modelo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  return CATEGORIAS[m] ?? "Automóvel";
+const TRANSMISSAO = {
+  clio: "Manual", "208": "Manual", yaris: "Manual", passat: "Manual", octavia: "Manual",
+};
+
+const COMBUSTIVEL = {
+  corolla: "Híbrido", rav4: "Híbrido", xc60: "Híbrido",
+  golf: "Flex", polo: "Flex", clio: "Flex", yaris: "Flex", "208": "Flex",
+  tiguan: "Flex", passat: "Flex", territory: "Flex", "hr-v": "Flex", hilux: "Flex",
+  sportage: "Gasolina", octavia: "Gasolina",
+  a4: "Gasolina", "c-class": "Gasolina", "3 series": "Gasolina", q5: "Gasolina",
+  discovery: "Gasolina", x3: "Gasolina", gla: "Gasolina",
+};
+
+function norm(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
+function getCategoria(modelo) { return CATEGORIAS[norm(modelo)] ?? "Automóvel"; }
+function getTransmissao(modelo) { return TRANSMISSAO[norm(modelo)] ?? "Automático"; }
+function getCombustivel(modelo) { return COMBUSTIVEL[norm(modelo)] ?? "Flex"; }
 
 const FROTA = [
-  { id: 1, marca: "Volkswagen",    modelo: "Golf",      ano: 2023, isDisponivel: true,  imagemBase64: null },
-  { id: 2, marca: "Toyota",        modelo: "Corolla",   ano: 2023, isDisponivel: true,  imagemBase64: null },
-  { id: 3, marca: "BMW",           modelo: "3 Series",  ano: 2023, isDisponivel: true,  imagemBase64: null },
-  { id: 4, marca: "Mercedes-Benz", modelo: "C-Class",   ano: 2024, isDisponivel: true,  imagemBase64: null },
-  { id: 5, marca: "Audi",          modelo: "A4",        ano: 2023, isDisponivel: true,  imagemBase64: null },
-  { id: 6, marca: "Renault",       modelo: "Clio",      ano: 2022, isDisponivel: false, imagemBase64: null },
-  { id: 7, marca: "Volkswagen",    modelo: "Tiguan",    ano: 2023, isDisponivel: true,  imagemBase64: null },
-  { id: 8, marca: "Toyota",        modelo: "RAV4",      ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id:  1, marca: "Volkswagen",    modelo: "Golf",        ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id:  2, marca: "Toyota",        modelo: "Corolla",     ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id:  3, marca: "BMW",           modelo: "3 Series",    ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id:  4, marca: "Mercedes-Benz", modelo: "C-Class",     ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id:  5, marca: "Audi",          modelo: "A4",          ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id:  6, marca: "Renault",       modelo: "Clio",        ano: 2022, isDisponivel: false, imagemBase64: null },
+  { id:  7, marca: "Volkswagen",    modelo: "Tiguan",      ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id:  8, marca: "Toyota",        modelo: "RAV4",        ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id:  9, marca: "Honda",         modelo: "Civic",       ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 10, marca: "Jeep",          modelo: "Compass",     ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id: 11, marca: "Hyundai",       modelo: "Tucson",      ano: 2023, isDisponivel: false, imagemBase64: null },
+  { id: 12, marca: "Fiat",          modelo: "Pulse",       ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id: 13, marca: "Chevrolet",     modelo: "Onix",        ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 14, marca: "Nissan",        modelo: "Kicks",       ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id: 15, marca: "Ford",          modelo: "Territory",   ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 16, marca: "Peugeot",       modelo: "3008",        ano: 2024, isDisponivel: false, imagemBase64: null },
+  { id: 17, marca: "Kia",           modelo: "Sportage",    ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 18, marca: "Skoda",         modelo: "Octavia",     ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 19, marca: "Volvo",         modelo: "XC60",        ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id: 20, marca: "Land Rover",    modelo: "Discovery",   ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 21, marca: "BMW",           modelo: "X3",          ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id: 22, marca: "Audi",          modelo: "Q5",          ano: 2023, isDisponivel: false, imagemBase64: null },
+  { id: 23, marca: "Mercedes-Benz", modelo: "GLA",         ano: 2024, isDisponivel: true,  imagemBase64: null },
+  { id: 24, marca: "Honda",         modelo: "HR-V",        ano: 2023, isDisponivel: true,  imagemBase64: null },
+  { id: 25, marca: "Toyota",        modelo: "Hilux",       ano: 2024, isDisponivel: true,  imagemBase64: null },
 ];
+
 
 export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
   const [automoveis] = useState(FROTA);
+  const [busca, setBusca] = useState({ retirada: "", devolucao: "", dataRetirada: "", dataDevolucao: "" });
+  const [erroBusca, setErroBusca] = useState("");
+  const [resultadosBusca, setResultadosBusca] = useState(null);
   const frotaRef = useRef(null);
+  const searchRef = useRef(null);
 
   function scrollParaFrota() {
     frotaRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function selecionarLocalPopular(cidade) {
+    setBusca((p) => ({ ...p, retirada: cidade }));
+    searchRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function handleBuscar() {
+    if (!busca.retirada.trim()) { setErroBusca("Informe o local de retirada."); return; }
+    if (!busca.dataRetirada) { setErroBusca("Informe a data de retirada."); return; }
+    if (!busca.dataDevolucao) { setErroBusca("Informe a data de devolução."); return; }
+    if (busca.dataRetirada >= busca.dataDevolucao) { setErroBusca("A data de devolução deve ser após a de retirada."); return; }
+    setErroBusca("");
+    setResultadosBusca(automoveis.filter((a) => a.isDisponivel));
+    scrollParaFrota();
   }
 
   return (
@@ -49,7 +114,7 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
 
         {/* Nav dentro da imagem */}
         <nav className="lp-hero-nav">
-          <img src="/bycarspng.png" alt="byCars" className="lp-hero-nav-logo" />
+          <span className="lp-hero-nav-logo">VERBUM</span>
           <ul className="lp-hero-nav-links">
             <li><button type="button" className="lp-hero-nav-link lp-hero-nav-link--active" onClick={scrollParaFrota}>Aluguel de Carros</button></li>
             <li><button type="button" className="lp-hero-nav-link" onClick={scrollParaFrota}>Frota</button></li>
@@ -67,48 +132,54 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
             Alugue um carro<br />para cada viagem
           </h1>
 
-          <div className="lp-search-card">
+          <div className="lp-search-card" ref={searchRef}>
             <div className="lp-search-fields">
 
               <div className="lp-search-field">
                 <span className="lp-search-label">Retirada</span>
-                <div className="lp-search-input-row">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <span className="lp-search-placeholder">Cidade, aeroporto ou estação</span>
-                </div>
+                <LocationPicker
+                  value={busca.retirada}
+                  placeholder="Cidade, aeroporto ou estação"
+                  onChange={(v) => setBusca((p) => ({ ...p, retirada: v }))}
+                />
               </div>
 
               <div className="lp-search-sep" />
 
               <div className="lp-search-field">
                 <span className="lp-search-label">Local de devolução</span>
-                <div className="lp-search-input-row">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <span className="lp-search-placeholder">Cidade, aeroporto ou estação</span>
-                </div>
+                <LocationPicker
+                  value={busca.devolucao}
+                  placeholder="Cidade, aeroporto ou estação"
+                  onChange={(v) => setBusca((p) => ({ ...p, devolucao: v }))}
+                />
               </div>
 
               <div className="lp-search-sep" />
 
               <div className="lp-search-field">
                 <span className="lp-search-label">Data de retirada</span>
-                <div className="lp-search-input-row">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <span className="lp-search-placeholder">Selecionar data e hora</span>
-                </div>
+                <DatePicker
+                  value={busca.dataRetirada}
+                  min={new Date().toISOString().slice(0, 10)}
+                  placeholder="Selecionar data"
+                  onChange={(v) => setBusca((p) => ({ ...p, dataRetirada: v }))}
+                />
               </div>
 
               <div className="lp-search-sep" />
 
               <div className="lp-search-field">
                 <span className="lp-search-label">Data de devolução</span>
-                <div className="lp-search-input-row">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <span className="lp-search-placeholder">Selecionar data e hora</span>
-                </div>
+                <DatePicker
+                  value={busca.dataDevolucao}
+                  min={busca.dataRetirada || new Date().toISOString().slice(0, 10)}
+                  placeholder="Selecionar data"
+                  onChange={(v) => setBusca((p) => ({ ...p, dataDevolucao: v }))}
+                />
               </div>
 
-              <button type="button" className="lp-search-btn" onClick={scrollParaFrota}>
+              <button type="button" className="lp-search-btn" onClick={handleBuscar}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
@@ -116,6 +187,7 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
               </button>
 
             </div>
+            {erroBusca && <p className="lp-search-erro">{erroBusca}</p>}
           </div>
         </div>
       </section>
@@ -125,61 +197,67 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
         <div className="lp-section-inner">
           <div className="lp-section-header">
             <div>
-              <h2 className="lp-section-title">Veículos em destaque este mês</h2>
-              <p className="lp-section-sub">Experimente o melhor da nossa frota com nossas seleções especiais.</p>
+              {resultadosBusca ? (
+                <>
+                  <h2 className="lp-section-title">Veículos disponíveis em {busca.retirada}</h2>
+                  <p className="lp-section-sub">{resultadosBusca.length} veículo{resultadosBusca.length !== 1 ? "s" : ""} disponível{resultadosBusca.length !== 1 ? "s" : ""} para o período selecionado.</p>
+                </>
+              ) : (
+                <>
+                  <h2 className="lp-section-title">Veículos em destaque este mês</h2>
+                  <p className="lp-section-sub">Experimente o melhor da nossa frota com nossas seleções especiais.</p>
+                </>
+              )}
             </div>
           </div>
 
-          {automoveis.length > 0 && (
+          {(resultadosBusca ?? automoveis.filter(a => a.isDisponivel)).length > 0 && (
             <>
-              <div className="lp-vehicles-grid">
-                {automoveis.slice(0, 8).map((auto) => {
+              <div className="lp-vehicles-grid lp-vehicles-grid--light">
+                {(resultadosBusca ?? automoveis.filter(a => a.isDisponivel).slice(0, 8)).map((auto, idx) => {
                   const foto = srcFotoAutomovel(auto);
                   const categoria = getCategoria(auto.modelo);
+                  const trans = getTransmissao(auto.modelo);
+                  const combustivel = getCombustivel(auto.modelo);
                   return (
                     <div
                       key={auto.id}
-                      className={`lp-vehicle-card${auto.isDisponivel ? " lp-vehicle-card--avail" : " lp-vehicle-card--unavail"}`}
-                      onClick={auto.isDisponivel ? () => onSelecionarAutomovel(auto) : undefined}
+                      className="lp-vehicle-card lp-vehicle-card--avail"
+                      onClick={() => onSelecionarAutomovel(auto)}
                     >
                       {/* Foto */}
                       <div className="lp-vc-photo">
-                        <span className="lp-vc-category">{categoria}</span>
                         <img
                           src={foto ?? "/getimage.png"}
                           alt={`${auto.marca} ${auto.modelo}`}
                           loading="lazy"
+                          style={auto.id === 9 ? { transform: "scale(0.75)", transformOrigin: "center" } : undefined}
                         />
                       </div>
 
                       {/* Info */}
                       <div className="lp-vc-body">
-                        <div className="lp-vc-name">{auto.marca} {auto.modelo}</div>
-
-                        <div className="lp-vc-attrs">
-                          {/* Transmissão */}
-                          <div className="lp-vc-attr">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><line x1="5" y1="8" x2="5" y2="12"/><line x1="19" y1="8" x2="19" y2="12"/><line x1="5" y1="12" x2="12" y2="16"/><line x1="19" y1="12" x2="12" y2="16"/></svg>
-                            Automático
+                        <div className="lp-vc-header">
+                          <div>
+                            <div className="lp-vc-name">{auto.marca} {auto.modelo}</div>
+                            <div className="lp-vc-subtitle">{categoria} / {auto.marca}</div>
                           </div>
+                          <span className="lp-vc-num">{String(idx + 1).padStart(2, "0")}</span>
                         </div>
 
-                        <div className="lp-vc-icons-row">
-                          {/* Passageiros */}
-                          <span className="lp-vc-icon-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                            5
-                          </span>
-                          {/* Malas */}
-                          <span className="lp-vc-icon-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                            2
-                          </span>
-                          {/* Ano */}
-                          <span className="lp-vc-icon-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            {auto.ano}
-                          </span>
+                        <div className="lp-vc-specs">
+                          <div className="lp-vc-spec">
+                            <span className="lp-vc-spec-label">Trans</span>
+                            <span className="lp-vc-spec-val">{trans}</span>
+                          </div>
+                          <div className="lp-vc-spec">
+                            <span className="lp-vc-spec-label">Assentos</span>
+                            <span className="lp-vc-spec-val">05</span>
+                          </div>
+                          <div className="lp-vc-spec">
+                            <span className="lp-vc-spec-label">Combustível</span>
+                            <span className="lp-vc-spec-val">{combustivel}</span>
+                          </div>
                         </div>
 
                         <div className="lp-vc-footer">
@@ -223,14 +301,48 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
         </div>
       </section>
 
-      {/* ── POPULAR LOCATIONS ───────────────────────────────── */}
+      {/* ── POPULAR LOCATIONS + STATS ───────────────────────── */}
       <section className="lp-section lp-section--gray" id="locais">
         <div className="lp-section-inner">
-          <h2 className="lp-section-title">Descubra aluguéis populares pelo Brasil</h2>
-          <p className="lp-section-sub">Explore nossa ampla rede de locais de retirada e devolução.</p>
+          <div className="lp-locais-header">
+            <div>
+              <h2 className="lp-section-title">Descubra aluguéis populares pelo Brasil</h2>
+              <p className="lp-section-sub">Explore nossa ampla rede de locais de retirada e devolução.</p>
+            </div>
+            <div className="lp-locais-stats">
+              <div className="lp-locais-stat">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="lp-locais-stat-icon">
+                  <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+                  <circle cx="7.5" cy="17" r="2.5"/><circle cx="16.5" cy="17" r="2.5"/>
+                </svg>
+                <div className="lp-locais-stat-text">
+                  <span className="lp-locais-stat-num">{automoveis.length}</span>
+                  <span className="lp-locais-stat-label">Veículos na frota</span>
+                </div>
+              </div>
+              <div className="lp-locais-stat-divider" />
+              <div className="lp-locais-stat">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="lp-locais-stat-icon">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <div className="lp-locais-stat-text">
+                  <span className="lp-locais-stat-num">{automoveis.filter(a => a.isDisponivel).length}</span>
+                  <span className="lp-locais-stat-label">Disponíveis agora</span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="lp-locations-wrap">
-            {POPULAR_LOCATIONS.map((loc) => (
-              <span key={loc} className="lp-location-pill">Aluguel em {loc}</span>
+            {CAPITAIS.map((loc) => (
+              <button
+                key={loc}
+                type="button"
+                className="lp-location-pill"
+                onClick={() => selecionarLocalPopular(loc)}
+              >
+                Aluguel em {loc}
+              </button>
             ))}
           </div>
         </div>
@@ -246,17 +358,23 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
             <button type="button" className="lp-see-all" onClick={onEntrar}>Ver todas →</button>
           </div>
           <div className="lp-deals-grid">
-            <div className="lp-deal-card lp-deal-card--dark">
-              <span className="lp-deal-badge">Válido de 14 Jan – 19 Jan 2025</span>
-              <p className="lp-deal-title">Aproveite as férias com nossas promoções de temporada</p>
-              <div className="lp-deal-percent">40%</div>
-              <p className="lp-deal-terms">*Com termos e condições</p>
+            <div className="lp-deal-card" style={{ backgroundImage: "url('/oferta1.avif')" }}>
+              <div className="lp-deal-overlay" />
+              <div className="lp-deal-content">
+                <span className="lp-deal-badge">Válido de 14 Jan – 19 Jan 2025</span>
+                <p className="lp-deal-title">Aproveite as férias com nossas promoções de temporada</p>
+                <div className="lp-deal-percent">40%</div>
+                <p className="lp-deal-terms">*Com termos e condições</p>
+              </div>
             </div>
-            <div className="lp-deal-card lp-deal-card--medium">
-              <span className="lp-deal-badge">Válido de 8 Jan – 22 Jan 2025</span>
-              <p className="lp-deal-title">Descontos exclusivos online para uma reserva perfeita</p>
-              <div className="lp-deal-percent">65%</div>
-              <p className="lp-deal-terms">*Com termos e condições</p>
+            <div className="lp-deal-card" style={{ backgroundImage: "url('/oferta2.avif')" }}>
+              <div className="lp-deal-overlay" />
+              <div className="lp-deal-content">
+                <span className="lp-deal-badge">Válido de 8 Jan – 22 Jan 2025</span>
+                <p className="lp-deal-title">Descontos exclusivos online para uma reserva perfeita</p>
+                <div className="lp-deal-percent">65%</div>
+                <p className="lp-deal-terms">*Com termos e condições</p>
+              </div>
             </div>
           </div>
         </div>
@@ -266,67 +384,18 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
       <div className="lp-partners-bar">
         <div className="lp-section-inner lp-partners-inner">
           {PARTNERS.map((p) => (
-            <span key={p} className="lp-partner-name">{p}</span>
+            <img key={p.src} src={p.src} alt={p.alt} className="lp-partner-logo" />
           ))}
         </div>
       </div>
 
-      {/* ── CTA BANNERS ─────────────────────────────────────── */}
-      <section className="lp-section lp-section--flush">
-        <div className="lp-section-inner">
-          <div className="lp-cta-grid">
-            <div className="lp-cta-dark">
-              <svg className="lp-cta-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.5">
-                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
-                <circle cx="12" cy="13" r="3"/>
-              </svg>
-              <h3 className="lp-cta-title">Explore mais para encontrar seu veículo ideal</h3>
-              <p className="lp-cta-body">Reserve sua viagem perfeita conosco.</p>
-              <button type="button" className="lp-cta-btn" onClick={scrollParaFrota}>
-                Reservar agora →
-              </button>
-            </div>
-            <div className="lp-cta-image">
-              <div className="lp-cta-image-overlay" />
-              <p className="lp-cta-image-text">Além do transporte,<br />criando memórias de vida.</p>
-            </div>
-          </div>
-          <div className="lp-stats-bar">
-            <div className="lp-stat">
-              <span className="lp-stat-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.6">
-                  <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h12l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
-                  <circle cx="12" cy="13" r="3"/>
-                </svg>
-              </span>
-              <span className="lp-stat-num">{automoveis.length > 0 ? automoveis.length : "—"}</span>
-              <span className="lp-stat-label">Veículos na frota</span>
-            </div>
-            <div className="lp-stat">
-              <span className="lp-stat-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.6">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="9" cy="7" r="4"/>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-              </span>
-              <span className="lp-stat-num">
-                {automoveis.filter((a) => a.isDisponivel).length > 0
-                  ? automoveis.filter((a) => a.isDisponivel).length
-                  : "—"}
-              </span>
-              <span className="lp-stat-label">Disponíveis agora</span>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── FOOTER ──────────────────────────────────────────── */}
+{/* ── FOOTER ──────────────────────────────────────────── */}
+
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
-            <img src="/bycarspng.png" alt="byCars" className="lp-footer-logo" />
+            <span className="lp-footer-logo">VERBUM</span>
             <p className="lp-footer-tagline">
               Nossa missão é oferecer veículos modernos, funcionais e elegantes que elevam cada aventura.
             </p>

@@ -42,6 +42,11 @@ export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, ch
   return (
     <div className="app-layout">
       <aside className="sidebar">
+        {/* Brand */}
+        <div className="sidebar-brand">
+          <span className="sidebar-brand-name">VERBUM</span>
+        </div>
+
         <nav className="sidebar-nav">
           {links.map((link) => (
             <button
@@ -66,23 +71,6 @@ export default function Layout({ usuarioLogado, onSair, onNavegar, rotaAtual, ch
       </aside>
 
       <div className="layout-body">
-        <header className="top-bar">
-          <button
-            type="button"
-            className="top-bar-logo-wrap"
-            onClick={() => onNavegar("#/automoveis")}
-            aria-label="Ir para a pagina de automoveis"
-            title="Ir para Automoveis"
-          >
-            <img src="/bycarspng.png" alt="byCars" className="top-bar-logo" />
-          </button>
-
-          <div className="top-bar-user">
-            <strong>{nome}</strong>
-            <span>{tipo}</span>
-          </div>
-        </header>
-
         <main className="layout-content">
           {children}
         </main>
