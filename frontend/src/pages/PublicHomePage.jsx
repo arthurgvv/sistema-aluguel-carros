@@ -420,7 +420,7 @@ export default function PublicHomePage({ onEntrar, onSelecionarAutomovel }) {
           </div>
         </div>
         <div className="lp-footer-bottom">
-          <span>©2025 byCars. Todos os direitos reservados.</span>
+          <span>©2025 VERBUM. Todos os direitos reservados.</span>
           <div className="lp-footer-legal">
             <span>Privacidade</span>
             <span>Termos de Serviço</span>

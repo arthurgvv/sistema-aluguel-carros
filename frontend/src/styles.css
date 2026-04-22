@@ -3315,13 +3315,7 @@ h2 {
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.auth-left-logo {
-  height: 32px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
+  width: fit-content;
 }
 
 .auth-back-icon {

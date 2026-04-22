@@ -157,10 +157,9 @@ export default function AuthPage({ onLoginSucesso, onVoltarInicio }) {
               </svg>
             </button>
           )}
-          <img src="/bycarspng.png" alt="byCars" className="auth-left-logo" />
         </div>
         <div className="auth-left-bottom">
-          <p className="auth-left-eyebrow">A experiência byCars</p>
+          <p className="auth-left-eyebrow">A experiência VERBUM</p>
           <h2 className="auth-left-tagline">Redefinindo o padrão<br />da mobilidade.</h2>
         </div>
       </div>
