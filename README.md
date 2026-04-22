@@ -468,9 +468,3 @@ Arquivos de diagramas presentes no repositorio:
 | Arthur Goncalves | <div align="center"><a href="https://github.com/arthurgvv"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="42" height="42" alt="GitHub Arthur Goncalves"></a></div> | <div align="center"><a href="https://www.linkedin.com/in/arthur-goncalves-62b15232a/"><img src="https://joaopauloaramuni.github.io/image/linkedin2.png" width="42" height="42" alt="LinkedIn Arthur Goncalves"></a></div> | <div align="center"><a href="mailto:arthurgvkj@gmail.com"><img src="https://joaopauloaramuni.github.io/image/gmail3.png" width="42" height="42" alt="Gmail Arthur Goncalves"></a></div> |
 | Matheus Guilherme | <div align="center"><a href="https://github.com/theuzao"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="42" height="42" alt="GitHub Matheus Guilherme"></a></div> | <div align="center">-</div> | <div align="center">-</div> |
 | Miguel Moreira | <div align="center"><a href="https://github.com/mmoreira41"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="42" height="42" alt="GitHub Miguel Moreira"></a></div> | <div align="center"><a href="https://www.linkedin.com/in/miguel-moreira-69a171269/"><img src="https://joaopauloaramuni.github.io/image/linkedin2.png" width="42" height="42" alt="LinkedIn Miguel Moreira"></a></div> | <div align="center"><a href="mailto:miguelmmc08@gmail.com"><img src="https://joaopauloaramuni.github.io/image/gmail3.png" width="42" height="42" alt="Gmail Miguel Moreira"></a></div> |
-
-## Agradecimentos
-
-- Equipe do projeto, pela divisao das entregas e evolucao continua da aplicacao.
-- Disciplina de Engenharia de Software, por orientar a organizacao por camadas, os diagramas e o fluxo de iteracoes.
-- Documentacoes oficiais de Spring Boot, React, Vite e H2, que apoiaram a implementacao.
