@@ -71,12 +71,19 @@ export default function ContratosCredito({ usuarioLogado }) {
 
   return (
     <section className="page-card">
-      <header className="page-header">
-        <p className="eyebrow">Painel do banco</p>
-        <h1>Contratos de credito</h1>
-        <p className="page-subtitle">
-          Creditos concedidos pelo banco para financiamento de alugueis.
-        </p>
+      <header className="split-header">
+        <div>
+          <p className="eyebrow">Painel do banco</p>
+          <h1>Contratos de credito</h1>
+          <p className="page-subtitle">
+            Creditos concedidos pelo banco para financiamento de alugueis.
+          </p>
+        </div>
+        <div className="header-actions">
+          <button type="button" className="ghost-button" onClick={carregar}>
+            Atualizar
+          </button>
+        </div>
       </header>
 
       {!carregando && contratos.length > 0 && (
@@ -119,11 +126,6 @@ export default function ContratosCredito({ usuarioLogado }) {
         <>
           <div className="table-toolbar">
             <span className="table-toolbar-title">Contratos de credito</span>
-            <div className="header-actions">
-              <button type="button" className="ghost-button" onClick={carregar}>
-                Atualizar
-              </button>
-            </div>
           </div>
           <div className="table-wrapper">
             <table className="clients-table">

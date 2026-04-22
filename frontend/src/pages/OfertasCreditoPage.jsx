@@ -71,12 +71,19 @@ export default function OfertasCreditoPage({ usuarioLogado }) {
 
   return (
     <section className="page-card">
-      <header className="page-header">
-        <p className="eyebrow">Credito</p>
-        <h1>Ofertas de credito</h1>
-        <p className="page-subtitle">
-          Avalie as propostas enviadas pelos bancos para seus pedidos.
-        </p>
+      <header className="split-header">
+        <div>
+          <p className="eyebrow">Credito</p>
+          <h1>Ofertas de credito</h1>
+          <p className="page-subtitle">
+            Avalie as propostas enviadas pelos bancos para seus pedidos.
+          </p>
+        </div>
+        <div className="header-actions">
+          <button type="button" className="ghost-button" onClick={carregar}>
+            Atualizar
+          </button>
+        </div>
       </header>
 
       {erro && <p className="feedback error">{erro}</p>}
@@ -100,11 +107,6 @@ export default function OfertasCreditoPage({ usuarioLogado }) {
         <>
           <div className="table-toolbar">
             <span className="table-toolbar-title">Minhas ofertas</span>
-            <div className="header-actions">
-              <button type="button" className="ghost-button" onClick={carregar}>
-                Atualizar
-              </button>
-            </div>
           </div>
           <div className="table-wrapper">
             <table className="clients-table">

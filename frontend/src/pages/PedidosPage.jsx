@@ -282,14 +282,15 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onEditarPedid
   return (
     <section className="page-card">
 
-      {/* Hero header */}
-      <div className="ord-hero">
-        <div className="ord-watermark">PEDIDOS</div>
-        <div className="ord-hero-left">
+      <header className="split-header">
+        <div>
           <p className="eyebrow">{isAgente ? "Painel do agente" : "Meus pedidos"}</p>
-          <h1 className="ord-title">
-            {isAgente ? "PEDIDOS DE ALUGUEL" : "MEUS PEDIDOS"}
-          </h1>
+          <h1>{isAgente ? "Pedidos de aluguel" : "Meus pedidos"}</h1>
+          <p className="page-subtitle">
+            {isAgente
+              ? "Acompanhe e gerencie os pedidos de aluguel dos clientes."
+              : "Acompanhe o status dos seus alugueis."}
+          </p>
         </div>
         <div className="header-actions">
           {!isAgente && onNovoPedido && (
@@ -301,7 +302,7 @@ export default function PedidosPage({ usuarioLogado, onNovoPedido, onEditarPedid
             Atualizar
           </button>
         </div>
-      </div>
+      </header>
 
       {erro    && <p className="feedback error">{erro}</p>}
       {mensagem && <p className="feedback success">{mensagem}</p>}

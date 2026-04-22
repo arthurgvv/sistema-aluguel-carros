@@ -79,7 +79,7 @@ export default function EmpregadoresPage({ usuarioLogado }) {
   return (
     <section className="page-card form-page">
       <header className="page-header">
-        <p className="eyebrow">Perfil</p>
+        <p className="eyebrow">Conta</p>
         <h1>Empregadores</h1>
         <p className="page-subtitle">
           Gerencie suas fontes de renda. Maximo de 3 empregadores.

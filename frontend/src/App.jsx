@@ -80,8 +80,8 @@ export default function App() {
       return;
     }
 
-    // Logado tentando acessar tela de login
-    if (logado && rota === "auth") {
+    // Logado tentando acessar homepage ou tela de login → entra no sistema
+    if (logado && ["inicio", "auth"].includes(rota)) {
       navegar(rotaInicial(usuarioLogado));
       return;
     }
@@ -121,9 +121,9 @@ export default function App() {
   }
 
   function registrarSessao(usuario) {
+    if (!usuario) return; // backend não retornou dados válidos
     localStorage.setItem(STORAGE_KEY, JSON.stringify(usuario));
     setUsuarioLogado(usuario);
-
     setAutomovelSelecionado(null);
     navegar(rotaInicial(usuario));
   }

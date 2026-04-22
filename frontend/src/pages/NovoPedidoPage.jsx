@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { criarPedido, listarAutomoveisDisponiveis } from "../services/clientesApi";
 import { srcFotoAutomovel } from "../utils/fotoAutomovelLocal";
+import { MODELOS_DESTAQUE } from "../utils/frotaDestaque";
 import DatePicker from "../components/DatePicker";
 
 /* ── Mapeamentos de atributos ──────────────────────────────── */
@@ -55,7 +56,16 @@ export default function NovoPedidoPage({ usuarioLogado, automovelPreSelecionado,
 
   useEffect(() => {
     listarAutomoveisDisponiveis()
-      .then(lista => setAutomoveis(lista || []))
+      .then(lista => {
+        const ordenada = (lista || []).slice().sort((a, b) => {
+          const aD = MODELOS_DESTAQUE.has(a.modelo);
+          const bD = MODELOS_DESTAQUE.has(b.modelo);
+          if (aD && !bD) return -1;
+          if (!aD && bD) return 1;
+          return 0;
+        });
+        setAutomoveis(ordenada);
+      })
       .catch(e => setErro(e.message || "Não foi possível carregar os veículos."))
       .finally(() => setCarregando(false));
   }, []);
@@ -94,16 +104,16 @@ export default function NovoPedidoPage({ usuarioLogado, automovelPreSelecionado,
     return (
       <section className="page-card np-step1">
         {/* Header */}
-        <div className="np-hero">
-          <div className="np-watermark">FROTA</div>
-          <div className="np-hero-left">
+        <header className="split-header">
+          <div>
             <p className="eyebrow">Novo pedido — Etapa 1 de 2</p>
-            <h1 className="np-title">ESCOLHA SEU VEÍCULO</h1>
+            <h1>Escolha seu veículo</h1>
+            <p className="page-subtitle">Selecione um dos veículos disponíveis para continuar.</p>
           </div>
           <button type="button" className="ghost-button" onClick={onCancelar}>
             Cancelar
           </button>
-        </div>
+        </header>
 
         {erro && <p className="feedback error">{erro}</p>}
 
@@ -134,6 +144,9 @@ export default function NovoPedidoPage({ usuarioLogado, automovelPreSelecionado,
                 >
                   <div className="np-car-photo">
                     <img src={foto ?? "/getimage.png"} alt={`${auto.marca} ${auto.modelo}`} loading="lazy" />
+                    {MODELOS_DESTAQUE.has(auto.modelo) && (
+                      <span className="np-car-badge">Destaque</span>
+                    )}
                     <span className="np-car-num">{String(idx + 1).padStart(2, "0")}</span>
                   </div>
                   <div className="np-car-body">
@@ -200,7 +213,7 @@ export default function NovoPedidoPage({ usuarioLogado, automovelPreSelecionado,
         <div className="np-booking-form">
           <div className="np-booking-form-inner">
             <p className="eyebrow">Novo pedido — Etapa 2 de 2</p>
-            <h2 className="np-booking-title">PERÍODO DE ALUGUEL</h2>
+            <h2 className="np-booking-title">Período de aluguel</h2>
 
             {erro && <p className="feedback error" style={{ marginBottom: 8 }}>{erro}</p>}
 

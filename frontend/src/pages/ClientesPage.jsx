@@ -37,7 +37,7 @@ export default function ClientesPage({ onEditarCliente, onNovoCliente }) {
 
   return (
     <section className="page-card">
-      <header className="page-header">
+      <header className="split-header">
         <div>
           <p className="eyebrow">Painel do agente</p>
           <h1>Clientes</h1>
@@ -45,16 +45,15 @@ export default function ClientesPage({ onEditarCliente, onNovoCliente }) {
             Gerencie os clientes cadastrados no sistema.
           </p>
         </div>
+        <div className="header-actions">
+          <button type="button" className="primary-button btn-gradient" onClick={onNovoCliente}>
+            + Novo cliente
+          </button>
+          <button type="button" className="ghost-button" onClick={carregarClientes}>
+            Atualizar
+          </button>
+        </div>
       </header>
-
-      <div className="toolbar">
-        <button type="button" className="primary-button" onClick={onNovoCliente}>
-          + Novo cliente
-        </button>
-        <button type="button" className="ghost-button" onClick={carregarClientes}>
-          Atualizar
-        </button>
-      </div>
 
       {erro && <p className="feedback error">{erro}</p>}
       {mensagem && <p className="feedback success">{mensagem}</p>}

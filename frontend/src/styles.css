@@ -1866,7 +1866,7 @@ h2 {
 
 .primary-button {
   background: var(--primary);
-  color: #ffffff;
+  color: #0c0c0c;
 }
 
 .primary-button:hover:not(:disabled) {
@@ -2350,6 +2350,19 @@ h2 {
   color: rgba(255,255,255,0.12);
   line-height: 1;
   pointer-events: none;
+}
+.np-car-badge {
+  position: absolute;
+  top: 10px; left: 10px;
+  background: rgba(255,255,255,0.92);
+  color: #0c0c0c;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  z-index: 2;
 }
 .np-car-body {
   padding: 14px 14px 16px;
@@ -2902,6 +2915,7 @@ h2 {
 /* botao de acao com gradiente preto elegante */
 .btn-gradient {
   background: linear-gradient(150deg, #111111 0%, #3a3a3a 100%);
+  color: #ffffff;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
 }
 
@@ -3372,6 +3386,14 @@ h2 {
   padding: 32px 56px;
   overflow-y: auto;
   scrollbar-width: none;
+  /* sobrescreve as vars do tema escuro para o fundo branco */
+  --text:          #1b1b1b;
+  --muted:         #888888;
+  --line:          rgba(0, 0, 0, 0.08);
+  --line-strong:   rgba(0, 0, 0, 0.15);
+  --primary:       #1b1b1b;
+  --primary-hover: #444444;
+  --primary-dim:   rgba(0, 0, 0, 0.04);
 }
 .auth-split-right::-webkit-scrollbar { display: none; }
 
