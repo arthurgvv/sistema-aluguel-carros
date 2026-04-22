@@ -301,7 +301,7 @@ Isso permite que o frontend chame URLs relativas como `/auth/login` e `/clientes
 ### 1. Backend
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros\backend
+cd sistema-aluguel-carros\backend
 mvn spring-boot:run
 ```
 
@@ -313,7 +313,7 @@ Backend disponivel em:
 ### 2. Frontend
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros\frontend
+cd sistema-aluguel-carros\frontend
 npm install
 npm run dev
 ```
@@ -335,14 +335,14 @@ Frontend disponivel em:
 Backend:
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros\backend
+cd sistema-aluguel-carros\backend
 mvn clean package
 ```
 
 Frontend:
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros\frontend
+cd sistema-aluguel-carros\frontend
 npm run build
 ```
 
@@ -411,14 +411,14 @@ Arquivos de teste ja presentes no projeto:
 Execucao:
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros\backend
+cd sistema-aluguel-carros\backend
 mvn test
 ```
 
 ### Validacao do frontend
 
 ```powershell
-cd C:\Users\gv\Documents\GitHub\PROJETOSBONS\sistema-aluguel-carros\frontend
+cd sistema-aluguel-carros\frontend
 npm run build
 ```
 
